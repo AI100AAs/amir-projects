@@ -1,0 +1,328 @@
+[
+  {
+    "id": "9ab282bc17fd4c5cb9d8a148006817ba",
+    "created_at": "2026-06-24T00:08:20.871763+00:00",
+    "status": "success",
+    "style": "Modern luxury",
+    "room_type": "Living room",
+    "user_prompt": "make it feel larger, cleaner, and more premium",
+    "final_prompt": "Modern luxury living room interior. Expansive, clean aesthetic with high-end materials: polished white marble flooring, dark walnut wood paneling, and cream boucle textiles. Furniture includes a low-profile modular sofa and minimalist brass accents. Lighting is warm and sophisticated, featuring recessed LED strips and sculptural floor lamps casting soft ambient light. The palette is neutral tones\u2014charcoal, beige, and gold\u2014creating a spacious, serene, and premium atmosphere. Ultra-clean lines, elegant finishes, high contrast.",
+    "prompt_note": "Prompt enhanced locally with google/gemma-4-e2b-qat.",
+    "settings": {
+      "room_type": "Living room",
+      "image_size": 1024,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 12400,
+      "use_prompt_helper": true
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/UBC/AI100/projects/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off",
+      "first_run_note": "First run after startup can take a while while the local model warms up. If the model folder is missing, the first run may also download the 3.42 GB MLX payload."
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/aba7462be1ca49c98fe3c56bad65a91f.png"
+      },
+      {
+        "label": "Variation 1",
+        "url": "/static/generated/aba7462be1ca49c98fe3c56bad65a91f_variation_1.png"
+      },
+      {
+        "label": "Variation 2",
+        "url": "/static/generated/aba7462be1ca49c98fe3c56bad65a91f_variation_2.png"
+      }
+    ],
+    "error": ""
+  },
+  {
+    "id": "cec0fcbc90424dca865263511a25c7ff",
+    "created_at": "2026-06-24T00:07:25.048093+00:00",
+    "status": "success",
+    "style": "Minimalist",
+    "room_type": "Living room",
+    "user_prompt": "",
+    "final_prompt": "Edit the provided living room photo into a photorealistic interior design redesign. Preserve the room geometry, camera angle, windows, walls, and fixed architectural structure. Change decor, furniture, lighting, colors, and materials according to this instruction: redesign this room. Room type: Living room. Style: minimalist interior, clean lines, uncluttered, neutral colors.",
+    "prompt_note": "Prompt helper skipped for this run.",
+    "settings": {
+      "room_type": "Living room",
+      "image_size": 512,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 12400,
+      "use_prompt_helper": false
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/UBC/AI100/projects/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off",
+      "first_run_note": "First run after startup can take a while while the local model warms up. If the model folder is missing, the first run may also download the 3.42 GB MLX payload."
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/8f56bede8c354923948abcc3530eecb6.png"
+      },
+      {
+        "label": "Variation 1",
+        "url": "/static/generated/8f56bede8c354923948abcc3530eecb6_variation_1.png"
+      },
+      {
+        "label": "Variation 2",
+        "url": "/static/generated/8f56bede8c354923948abcc3530eecb6_variation_2.png"
+      }
+    ],
+    "error": ""
+  },
+  {
+    "id": "99f91a22772e4db1b477be4ef0613cb1",
+    "created_at": "2026-06-24T00:02:03.486350+00:00",
+    "status": "error",
+    "style": "Modern luxury",
+    "room_type": "Living room",
+    "user_prompt": "make it feel larger, cleaner, and more premium",
+    "final_prompt": "Modern luxury living room redesign. Expansive, clean aesthetic with high ceilings and open space. Features polished white marble floors, a low-profile charcoal velvet sectional, and bespoke walnut cabinetry. Decor includes minimalist geometric art, brushed brass accents, and recessed architectural lighting creating a warm, sophisticated atmosphere. The palette is neutral tones\u2014creams, grays, and deep wood\u2014emphasizing refined textures and premium finishes. Maintain existing room geometry and architecture.",
+    "prompt_note": "Prompt enhanced locally with google/gemma-4-e2b-qat.",
+    "settings": {
+      "room_type": "Living room",
+      "image_size": 1024,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 12400,
+      "use_prompt_helper": true
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/UBC/AI100/projects/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off",
+      "first_run_note": "First run after startup can take a while while the local model warms up. If the model folder is missing, the first run may also download the 3.42 GB MLX payload."
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/967b4145e74246648298115adf023591.png"
+      }
+    ],
+    "error": "Could not import the local MLX Bonsai runtime. Run pip install -r requirements.txt, and make sure the vendored vendor/mflux-prism and vendor/image-studio folders are installed."
+  },
+  {
+    "id": "af1d4e3c8efd405fa9e31c15533fcb61",
+    "created_at": "2026-06-23T04:05:35.171374+00:00",
+    "status": "success",
+    "style": "Scandinavian",
+    "room_type": "Living room",
+    "user_prompt": "make it feel larger, cleaner, and more premium",
+    "final_prompt": "Scandinavian living room redesign. Expansive, airy space with light oak wood flooring and matte white walls. Minimalist, low-profile beige sofa and clean-lined furniture. Decor features textured linen throws, ceramic vases, and subtle sage green accents. Abundant natural light streams through large windows. Warm, diffused lighting creates a serene, sophisticated, and premium atmosphere. Clean lines, functional design, soft natural palette.",
+    "prompt_note": "Prompt enhanced locally with google/gemma-4-e2b-qat.",
+    "settings": {
+      "room_type": "Living room",
+      "image_size": 512,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 12400,
+      "use_prompt_helper": true
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off",
+      "first_run_note": "First run after startup can take a while while the local model warms up. If the model folder is missing, the first run may also download the 3.42 GB MLX payload."
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/e3f2a9c13bf74a4f9a0509ee6ea5712a.png"
+      },
+      {
+        "label": "Variation 1",
+        "url": "/static/generated/e3f2a9c13bf74a4f9a0509ee6ea5712a_variation_1.png"
+      },
+      {
+        "label": "Variation 2",
+        "url": "/static/generated/e3f2a9c13bf74a4f9a0509ee6ea5712a_variation_2.png"
+      }
+    ],
+    "error": ""
+  },
+  {
+    "id": "74268a4e6fb54e86bf5109c68f83b8e6",
+    "created_at": "2026-06-23T00:22:50.302478+00:00",
+    "status": "success",
+    "style": "Modern luxury",
+    "room_type": "Bedroom",
+    "user_prompt": "refresh the space with modern furniture and better natural light",
+    "final_prompt": "Modern luxury bedroom interior. Sleek, minimalist platform bed with a textured velvet headboard and polished walnut wood accents. Designer nightstands with brushed brass hardware. Walls feature a mix of textured plaster and large floor-to-ceiling windows flooding the room with abundant, diffused natural light. Flooring is large-format light gray marble. Lighting includes warm recessed ceiling LEDs and a statement pendant lamp. The palette is sophisticated neutrals: creamy whites, deep charcoal grays, and warm gold accents. Serene, high-end atmosphere. Stable architecture.",
+    "prompt_note": "Prompt enhanced locally with google/gemma-4-e2b-qat.",
+    "settings": {
+      "room_type": "Bedroom",
+      "image_size": 512,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 12400,
+      "use_prompt_helper": true
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off",
+      "first_run_note": "First run after startup can take a while while the local model warms up. If the model folder is missing, the first run may also download the 3.42 GB MLX payload."
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/bc5339a868d049c0a1754e1925697aea.png"
+      },
+      {
+        "label": "Variation 1",
+        "url": "/static/generated/bc5339a868d049c0a1754e1925697aea_variation_1.png"
+      },
+      {
+        "label": "Variation 2",
+        "url": "/static/generated/bc5339a868d049c0a1754e1925697aea_variation_2.png"
+      }
+    ],
+    "error": ""
+  },
+  {
+    "id": "5f00cb4abddc4852bf214f2bc51e54d3",
+    "created_at": "2026-06-23T00:20:03.518318+00:00",
+    "status": "error",
+    "style": "Modern luxury",
+    "room_type": "Bedroom",
+    "user_prompt": "add warm lighting, built-in storage, and a calm color palette",
+    "final_prompt": "Modern luxury bedroom interior redesign featuring warm ambient lighting, seamless built-in minimalist storage units, and a serene color palette of muted taupe, soft gray, and cream. Incorporate premium materials such as textured linen bedding, matte wood accents, and brushed brass fixtures. The atmosphere is sophisticated and tranquil, emphasizing elegant finishes and refined textures. Maintain existing room geometry and architecture.",
+    "prompt_note": "Prompt enhanced locally with google/gemma-4-e2b-qat.",
+    "settings": {
+      "room_type": "Bedroom",
+      "image_size": 768,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 12400,
+      "use_prompt_helper": true
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off",
+      "first_run_note": "First run after startup can take a while while the local model warms up. If the model folder is missing, the first run may also download the 3.42 GB MLX payload."
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/242b961d041448c9881a3a319e4c9502.png"
+      }
+    ],
+    "error": "Could not import the local MLX Bonsai runtime. Run pip install -r requirements.txt, and make sure the vendored vendor/mflux-prism and vendor/image-studio folders are installed."
+  },
+  {
+    "id": "db9f2f42b072483ba0d83d9646986285",
+    "created_at": "2026-06-22T20:58:40.620939+00:00",
+    "status": "success",
+    "style": "Modern luxury",
+    "room_type": "Bedroom",
+    "user_prompt": "make it feel larger, cleaner, and more premium",
+    "final_prompt": "Modern luxury bedroom interior, expansive and clean aesthetic. Features high-end materials including large format light grey polished porcelain tile flooring, walnut wood paneling, and deep charcoal velvet textiles. Furniture includes a low-profile platform bed and sleek minimalist nightstands with brass hardware. Lighting is warm and layered, utilizing recessed ceiling lights and a statement sculptural chandelier. The palette is sophisticated neutral tones-creams, greys, and taupes-accented by rich emerald green accents. Atmosphere is serene, opulent, and highly refined.",
+    "prompt_note": "Prompt enhanced locally with google/gemma-4-e2b-qat.",
+    "settings": {
+      "room_type": "Bedroom",
+      "image_size": 1024,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 42,
+      "use_prompt_helper": true
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off"
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/bdabbbebd4d3415c9a236b9527dea651.png"
+      },
+      {
+        "label": "Variation 1",
+        "url": "/static/generated/bdabbbebd4d3415c9a236b9527dea651_variation_1.png"
+      },
+      {
+        "label": "Variation 2",
+        "url": "/static/generated/bdabbbebd4d3415c9a236b9527dea651_variation_2.png"
+      }
+    ],
+    "error": ""
+  },
+  {
+    "id": "675f5abf6933449b90cc9a1330c281ab",
+    "created_at": "2026-06-22T20:57:14.233175+00:00",
+    "status": "success",
+    "style": "Minimalist",
+    "room_type": "Bedroom",
+    "user_prompt": "make it feel larger, cleaner, and more premium",
+    "final_prompt": "Edit the provided bedroom photo into a photorealistic interior design redesign. Preserve the room geometry, camera angle, windows, walls, and fixed architectural structure. Change decor, furniture, lighting, colors, and materials according to this instruction: make it feel larger, cleaner, and more premium. Room type: Bedroom. Style: minimalist interior, clean lines, uncluttered, neutral colors.",
+    "prompt_note": "Prompt helper skipped for this run.",
+    "settings": {
+      "room_type": "Bedroom",
+      "image_size": 1024,
+      "steps": 4,
+      "guidance": 1.0,
+      "image_strength": 0.55,
+      "seed": 12400,
+      "use_prompt_helper": false
+    },
+    "model": {
+      "backend": "bonsai-mlx",
+      "model": "prism-ml/bonsai-image-binary-4B-mlx-1bit",
+      "model_dir": "/Users/ahda/Desktop/room-redesign/models/bonsai-image-4B-binary-mlx",
+      "device": "Apple Silicon MLX",
+      "prompt_helper": "google/gemma-4-e2b-qat",
+      "prompt_helper_default": "off"
+    },
+    "gallery": [
+      {
+        "label": "Original",
+        "url": "/static/uploads/213bfb89edc9456e81976c4c66206df5.png"
+      },
+      {
+        "label": "Variation 1",
+        "url": "/static/generated/213bfb89edc9456e81976c4c66206df5_variation_1.png"
+      },
+      {
+        "label": "Variation 2",
+        "url": "/static/generated/213bfb89edc9456e81976c4c66206df5_variation_2.png"
+      }
+    ],
+    "error": ""
+  }
+]

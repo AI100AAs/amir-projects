@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}About — Truth Lens{% endblock %}
+{% block content %}
+
+<div class="fade-in max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 dark:text-white">About Truth Lens</h1>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 transition-colors">
+        <h2 class="text-xl font-semibold mb-3 dark:text-gray-100">What It Does</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-3">
+            Truth Lens is a <strong>Fake News Detection System</strong> that analyzes news articles for credibility. It uses a pipeline of AI techniques to extract factual claims, cross-reference them against a curated knowledge base, and produce an overall credibility score with detailed reasoning.
+        </p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 transition-colors">
+        <h2 class="text-xl font-semibold mb-3 dark:text-gray-100">Architecture</h2>
+        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-3 overflow-x-auto">
+            <pre class="text-xs text-gray-600 dark:text-gray-400 font-mono whitespace-pre">
+┌─────────────┐     ┌──────────────────┐     ┌────────────┐     ┌──────────────────┐
+│   Input     │────→│  Claim Extraction │────→│    RAG     │────→│  Verdict & Score  │
+│ Article/URL │     │  ┌──────────────┐ │     │  Retrieval │     │  ┌────────────┐  │
+└─────────────┘     │  │Local (split) │ │     └────────────┘     │  │Similarity  │  │
+                    │  │  or         │─┼─→  ChromaDB +   ──────→│  │  or        │  │
+                    │  │LLM (API key)│ │     embeddings         │  │LLM judge   │  │
+                    │  └──────────────┘ │                       │  └────────────┘  │
+                    └──────────────────┘                       └──────────────────┘
+            </pre>
+        </div>
+        <ol class="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
+            <li><strong class="text-gray-800 dark:text-gray-200">Input</strong> — Accepts article text or URL. URLs are fetched and parsed via <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">newspaper4k</code>.</li>
+            <li><strong class="text-gray-800 dark:text-gray-200">Claim Extraction</strong> — <span class="font-medium text-green-700 dark:text-green-400">Local mode</span> (no key): splits text into sentences and filters for claim-like statements. <span class="font-medium text-purple-700 dark:text-purple-400">LLM mode</span> (with API key): uses an LLM to identify 3–7 key factual claims.</li>
+            <li><strong class="text-gray-800 dark:text-gray-200">RAG Retrieval</strong> — Each claim is embedded (via <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">sentence-transformers</code>) and compared against a <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">ChromaDB</code> vector store seeded with verified claims from fact-checking sources.</li>
+            <li><strong class="text-gray-800 dark:text-gray-200">Verdict &amp; Score</strong> — <span class="font-medium text-green-700 dark:text-green-400">Local mode</span>: uses semantic similarity distance to the closest matching claim. <span class="font-medium text-purple-700 dark:text-purple-400">LLM mode</span>: an LLM judge adjudicates each claim as <span class="text-green-600 dark:text-green-400 font-medium">True</span>, <span class="text-red-600 dark:text-red-400 font-medium">False</span>, or <span class="text-yellow-600 dark:text-yellow-400 font-medium">Misleading</span> with reasoning.</li>
+            <li><strong class="text-gray-800 dark:text-gray-200">Aggregation</strong> — Claim-level verdicts are aggregated into an overall credibility score (0–100%) with a summary.</li>
+        </ol>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 transition-colors">
+        <h2 class="text-xl font-semibold mb-3 dark:text-gray-100">Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <span class="font-medium text-gray-900 dark:text-gray-100">🌙 Dark Mode</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Toggle dark mode from the nav bar. Persisted in localStorage.</p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <span class="font-medium text-gray-900 dark:text-gray-100">🔧 Expert Mode</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Adjust max text length, claim count, similarity threshold, temperature, and model override.</p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <span class="font-medium text-gray-900 dark:text-gray-100">📊 Score Gauge</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Visual SVG gauge showing the overall credibility score at a glance.</p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <span class="font-medium text-gray-900 dark:text-gray-100">📤 Export Results</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Copy as JSON or download as Markdown report.</p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <span class="font-medium text-gray-900 dark:text-gray-100">📜 Analysis History</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Persistent history with search, delete, and clear. Survives server restarts.</p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <span class="font-medium text-gray-900 dark:text-gray-100">🖥️ Real-time Streaming</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">See progress live as each claim is extracted and evaluated via SSE.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 transition-colors">
+        <h2 class="text-xl font-semibold mb-3 dark:text-gray-100">Technology Stack</h2>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="font-medium dark:text-gray-100">Backend</span><br><span class="text-gray-500 dark:text-gray-400">Python, FastAPI, Uvicorn</span></div>
+            <div><span class="font-medium dark:text-gray-100">Frontend</span><br><span class="text-gray-500 dark:text-gray-400">Jinja2, Tailwind CSS</span></div>
+            <div><span class="font-medium dark:text-gray-100">Vector Store</span><br><span class="text-gray-500 dark:text-gray-400">ChromaDB</span></div>
+            <div><span class="font-medium dark:text-gray-100">Embeddings</span><br><span class="text-gray-500 dark:text-gray-400">sentence-transformers (all-MiniLM-L6-v2)</span></div>
+            <div><span class="font-medium dark:text-gray-100">LLM (optional)</span><br><span class="text-gray-500 dark:text-gray-400">OpenAI/OpenRouter API (configurable)</span></div>
+            <div><span class="font-medium dark:text-gray-100">Article Fetching</span><br><span class="text-gray-500 dark:text-gray-400">newspaper4k</span></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <span class="font-medium text-green-700 dark:text-green-400">🌱 Local Mode</span><br>
+            <span class="text-green-600 dark:text-green-300">Works out of the box, no keys needed. Uses sentence splitting + similarity search against 25 seed claims in ChromaDB.</span>
+        </div>
+        <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+            <span class="font-medium text-purple-700 dark:text-purple-400">⚡ LLM Mode</span><br>
+            <span class="text-purple-600 dark:text-purple-300">Enter any OpenAI-compatible API key (OpenRouter, OpenAI, etc.) in the UI for AI-powered extraction and reasoning. Key is used per-request only, never saved.</span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

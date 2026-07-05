@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome — AI Study Buddy</title>
+  <link rel="stylesheet" href="focus.css" />
+  <style>
+    .card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 36px;
+      max-width: 640px;
+      text-align: left;
+    }
+    :root[data-theme="light"] .card {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: #cbd5e1;
+    }
+    .card h1 { text-align: center; margin-bottom: 24px; }
+    .card ol { line-height: 1.7; color: #cbd5e1; padding-left: 20px; }
+    :root[data-theme="light"] .card ol { color: #334155; }
+    .card li { margin-bottom: 10px; }
+    .card .actions { margin-top: 28px; text-align: center; }
+    .hint { color: #94a3b8; font-size: 0.9rem; margin-top: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+  <button id="themeToggle" class="theme-toggle" title="Toggle light/dark">☀</button>
+  <main class="card">
+    <h1>Welcome to AI Study Buddy</h1>
+    <ol>
+      <li><strong>Pin the extension.</strong> Click the puzzle icon in Chrome’s toolbar, then pin AI Study Buddy.</li>
+      <li><strong>Start LM Studio.</strong> Load your model (e.g. <code>google/gemma-4-e4b</code>) and start the server on <code>http://localhost:1234</code>.</li>
+      <li><strong>Set your goal.</strong> Click the extension icon, enter what you want to study, choose a duration, and start.</li>
+      <li><strong>Stay accountable.</strong> The AI will check in periodically, nudge you if you drift, and softly block distracting tabs.</li>
+    </ol>
+    <div class="actions">
+      <button id="openOptions" class="primary">Open settings</button>
+      <button id="openSidePanel" class="secondary">Open side panel</button>
+    </div>
+    <p class="hint">Everything stays local by default. Browsing data is only sent to your own LM Studio server.</p>
+  </main>
+  <script src="welcome.js" type="module"></script>
+</body>
+</html>

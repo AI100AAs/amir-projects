@@ -1,0 +1,19 @@
+{
+  "name": "ubc-soft-nav",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Soft-Constraint Campus Navigation for UBC — route by vibe, not just speed.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node tests/smoke.mjs",
+    "demo": "node scripts/demo.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  }
+}

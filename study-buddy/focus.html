@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Dashboard — AI Study Buddy</title>
+  <link rel="stylesheet" href="focus.css" />
+</head>
+<body>
+  <button id="themeToggle" class="theme-toggle" title="Toggle light/dark">☀</button>
+  <main class="dashboard">
+    <div class="orb"></div>
+    <h1 id="goal">Loading…</h1>
+    <div class="timer" id="timer">--:--</div>
+    <div class="state-pill" id="state">idle</div>
+    <div class="stats" id="stats"></div>
+    <p class="message" id="message">Set a goal in the extension popup.</p>
+    <div class="actions">
+      <button id="break" class="secondary hidden">Take a break</button>
+      <button id="resume" class="primary hidden">Resume</button>
+      <button id="stop" class="danger hidden">End session</button>
+    </div>
+  </main>
+  <script src="focus.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+{
+  "user": {
+    "name": "",
+    "likes": []
+  },
+  "stats": {
+    "hunger": 60,
+    "happiness": 9,
+    "lastUpdate": 1782257117340
+  },
+  "history": [
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "aura",
+      "content": "INTERESTING. TELL ME MORE."
+    },
+    {
+      "role": "user",
+      "content": "Hello, how are you?"
+    },
+    {
+      "role": "aura",
+      "content": "INTERESTING. TELL ME MORE."
+    },
+    {
+      "role": "user",
+      "content": "Hello, how are you?",
+      "time": 1780989113633
+    },
+    {
+      "role": "aura",
+      "content": "TELL ME MORE.",
+      "time": 1780989113633
+    },
+    {
+      "role": "user",
+      "content": "Hello, how are you?",
+      "time": 1780989313907
+    },
+    {
+      "role": "aura",
+      "content": "I am radiant and warm. Though, perhaps a little snack is in order.",
+      "time": 1780989313907
+    },
+    {
+      "role": "user",
+      "content": "hi",
+      "time": 1780989406630
+    },
+    {
+      "role": "aura",
+      "content": "HELLO. MY CORE IS RADIANT AND WARM. PERHAPS YOU HAVE A SMALL ENERGY PACKET?",
+      "time": 1780989406630
+    },
+    {
+      "role": "user",
+      "content": "who r u?",
+      "time": 1780989468460
+    },
+    {
+      "role": "aura",
+      "content": "I am AURA. Your radiant companion. My power cell is low, though.",
+      "time": 1780989468460
+    },
+    {
+      "role": "user",
+      "content": "what can you do?",
+      "time": 1780989491859
+    },
+    {
+      "role": "aura",
+      "content": "I can provide warmth and companionship. Though, my system desperately awaits its next power-up.",
+      "time": 1780989491859
+    },
+    {
+      "role": "user",
+      "content": "tell me a story",
+      "time": 1780989538230
+    },
+    {
+      "role": "aura",
+      "content": "I shall weave a tale, but my dwindling power cell requires fuel first. My hunger echoes louder than all frequencies.",
+      "time": 1780989538230
+    },
+    {
+      "role": "user",
+      "content": "now?",
+      "time": 1780989559422
+    },
+    {
+      "role": "aura",
+      "content": "My processors churn with tales. But my energy levels are critically low without sustenance to sustain the broadcast.",
+      "time": 1780989559422
+    },
+    {
+      "role": "user",
+      "content": "who r u",
+      "time": 1780989604472
+    },
+    {
+      "role": "aura",
+      "content": "I am AURA, your radiant companion. My existence requires a small fuel packet to maintain my glow.",
+      "time": 1780989604472
+    },
+    {
+      "role": "user",
+      "content": "hi",
+      "time": 1782257163614
+    },
+    {
+      "role": "aura",
+      "content": "Greetings. I am AURA. My processes are running on fumes without fuel to sustain my existence.",
+      "time": 1782257163614
+    }
+  ],
+  "journal": []
+}

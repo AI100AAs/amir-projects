@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UBC Course Scheduler</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">UBC</div>
+          <div>
+            <h1>UBC Course Scheduler</h1>
+            <p>AI-assisted degree planning</p>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Primary navigation">
+          <button class="nav-item active" type="button" data-view="planner">
+            <span aria-hidden="true">#</span>
+            Planner
+          </button>
+          <button class="nav-item" type="button" data-view="courses">
+            <span aria-hidden="true">?</span>
+            Courses
+          </button>
+          <button class="nav-item" type="button" data-view="evidence">
+            <span aria-hidden="true">i</span>
+            Evidence
+          </button>
+          <button class="nav-item" type="button" data-view="risk">
+            <span aria-hidden="true">!</span>
+            Risk Review
+          </button>
+        </nav>
+
+        <div class="side-status">
+          <div class="status-row">
+            <span class="status-dot"></span>
+            <div>
+              <strong id="advisorStatus">Advisor review required</strong>
+              <p id="handoffCount">3 unresolved items</p>
+            </div>
+          </div>
+          <div class="mini-meter" aria-hidden="true">
+            <span id="sideConfidenceMeter"></span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div class="title-block">
+            <p class="eyebrow">UBC Vancouver / B.Sc. Computer Science / Option in Artificial Intelligence</p>
+            <h2>Plan a UBC CS degree schedule with transparent tradeoffs and human review points.</h2>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-action theme-toggle" id="themeButton" type="button" aria-label="Switch theme">Dark mode</button>
+            <button class="ghost-action" id="saveButton" type="button">Save</button>
+            <button class="ghost-action" id="exportButton" type="button">Export review packet</button>
+            <button class="primary-action" id="generateButton" type="button">Regenerate</button>
+          </div>
+        </header>
+
+        <section class="view active-view" id="plannerView">
+          <div class="control-band">
+            <form class="profile-panel" id="studentForm">
+              <div class="panel-title">
+                <div>
+                  <h3>Student profile</h3>
+                  <p>Personal details shape workload and elective ranking, not official requirements.</p>
+                </div>
+                <button class="text-action" id="resetButton" type="button">Reset</button>
+              </div>
+
+              <div class="field-row">
+                <label>
+                  Program
+                  <select id="majorSelect">
+                    <option value="cs-ai">UBC B.Sc. Computer Science - Option in Artificial Intelligence</option>
+                    <option value="ece-elec">UBC B.A.Sc. Electrical Engineering (ECE)</option>
+                  </select>
+                </label>
+                <label>
+                  Focus
+                  <select id="specializationSelect">
+                    <option value="ai">Option in Artificial Intelligence</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                Interests and circumstances
+                <textarea id="interestsInput" rows="4">I like applied machine learning, language models, human-centered products, and I want a manageable third year because I work part-time.</textarea>
+              </label>
+
+              <div class="field-row compact">
+                <label>
+                  Weekly work hours
+                  <input id="workHoursInput" type="number" min="0" max="40" value="14" />
+                </label>
+                <label>
+                  Max credits / term
+                  <input id="creditInput" type="number" min="9" max="24" value="15" />
+                </label>
+                <label>
+                  Start term
+                  <select id="startTermSelect">
+                    <option value="fall">Fall</option>
+                    <option value="spring">Spring</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="segmented" role="radiogroup" aria-label="Planning objective">
+                <label><input type="radio" name="pace" value="balanced" checked /> Balanced</label>
+                <label><input type="radio" name="pace" value="fast" /> Fastest path</label>
+                <label><input type="radio" name="pace" value="lighter" /> Lighter load</label>
+                <label><input type="radio" name="pace" value="explore" /> More electives</label>
+              </div>
+
+              <fieldset class="checks">
+                <legend>Scheduling considerations</legend>
+                <label><input type="checkbox" value="commuter" checked /> Commutes to campus</label>
+                <label><input type="checkbox" value="firstGen" /> First-generation student</label>
+                <label><input type="checkbox" value="accessibility" /> Accessibility-aware scheduling</label>
+                <label><input type="checkbox" value="athlete" /> Athletics or club time blocks</label>
+                <label><input type="checkbox" value="coop" /> Co-op or internship term</label>
+                <label><input type="checkbox" value="transfer" /> Transfer credit review</label>
+              </fieldset>
+            </form>
+
+            <aside class="assistant-panel">
+              <div class="panel-title">
+                <div>
+                  <h3>Local AI review</h3>
+                  <p>Uses your LM Studio model, google/gemma-4-e4b, through a local proxy.</p>
+                </div>
+                <span id="apiState">LM Studio ready</span>
+              </div>
+              <div class="button-row">
+                <button class="secondary-action" id="copyPromptButton" type="button">Copy prompt</button>
+                <button class="secondary-action dark" id="sendApiButton" type="button">Ask local Gemma</button>
+              </div>
+              <div class="privacy-card">
+                <strong>Local model default</strong>
+                <p>LM Studio keeps the request on your machine. The prompt still minimizes sensitive details and asks the model to return advisor-review items instead of invented certainty.</p>
+              </div>
+              <div class="model-output" id="modelOutput" aria-live="polite">
+                <strong>Model response</strong>
+                <p>Run the local model to generate an independent schedule critique.</p>
+              </div>
+            </aside>
+          </div>
+
+          <div class="metrics-grid">
+            <article>
+              <span>Requirement coverage</span>
+              <strong id="coverageMetric">92%</strong>
+              <div class="mini-meter"><span id="coverageMeter"></span></div>
+            </article>
+            <article>
+              <span>Recommendation confidence</span>
+              <strong id="confidenceMetric">74%</strong>
+              <div class="mini-meter"><span id="confidenceMeter"></span></div>
+            </article>
+            <article>
+              <span>Average credits</span>
+              <strong id="loadMetric">13.8</strong>
+              <div class="mini-meter"><span id="loadMeter"></span></div>
+            </article>
+            <article>
+              <span>High-demand flags</span>
+              <strong id="waitlistMetric">4</strong>
+              <div class="mini-meter"><span id="waitlistMeter"></span></div>
+            </article>
+          </div>
+
+          <div class="planner-layout">
+            <section class="schedule-section">
+              <div class="section-toolbar">
+                <div>
+                  <h3>Recommended schedule</h3>
+                  <p id="scenarioSummary">Balanced path with prerequisite-safe sequencing.</p>
+                </div>
+                <div class="view-toggle" aria-label="Schedule display">
+                  <button class="toggle-button active" type="button" data-schedule-view="terms">Terms</button>
+                  <button class="toggle-button" type="button" data-schedule-view="compare">Compare</button>
+                </div>
+              </div>
+              <div class="schedule-board" id="scheduleBoard" aria-label="Recommended term schedule"></div>
+              <div class="comparison-board hidden" id="comparisonBoard" aria-label="Scenario comparison"></div>
+            </section>
+
+            <aside class="decision-panel">
+              <div class="panel-title">
+                <div>
+                  <h3>Decision audit</h3>
+                  <p id="priorityMode">Balanced</p>
+                </div>
+              </div>
+              <div id="reasonList" class="stack-list"></div>
+
+              <div class="requirements-box">
+                <h3>Requirement checklist</h3>
+                <div id="requirementList" class="stack-list compact-list"></div>
+              </div>
+
+              <div class="uncertainty-box">
+                <h3>Advisor handoff</h3>
+                <div id="uncertaintyList" class="stack-list compact-list"></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="coursesView">
+          <div class="section-heading">
+            <div>
+              <h2>Course Explorer</h2>
+              <p>Review course evidence, demand, prerequisites, and why each course was selected.</p>
+            </div>
+            <div class="course-filters">
+              <input id="courseSearchInput" type="search" placeholder="Search code, title, or topic" />
+              <select id="courseFilterSelect" aria-label="Filter courses">
+                <option value="all">All courses</option>
+                <option value="required">Required</option>
+                <option value="specialization">Specialization</option>
+                <option value="elective">Electives</option>
+                <option value="high">High demand</option>
+              </select>
+            </div>
+          </div>
+          <div class="course-grid" id="courseGrid"></div>
+        </section>
+
+        <section class="view" id="evidenceView">
+          <div class="section-heading">
+            <div>
+              <h2>Evidence Workspace</h2>
+              <p>Signals are separated by source so students can inspect what the model relied on.</p>
+            </div>
+          </div>
+          <div class="source-grid" id="sourceGrid"></div>
+        </section>
+
+        <section class="view" id="riskView">
+          <div class="section-heading">
+            <div>
+              <h2>Risk Review</h2>
+              <p>The app makes uncertainty, privacy limits, and human accountability visible.</p>
+            </div>
+          </div>
+          <div class="risk-grid" id="riskGrid"></div>
+          <div class="policy-panel">
+            <h3>Built-in safeguards</h3>
+            <div id="safeguardList" class="safeguard-grid"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="exportDialog">
+      <form method="dialog" class="dialog-card">
+        <div class="panel-title">
+          <div>
+            <h3>Advisor review packet</h3>
+            <p>Shareable summary for a human advisor or project demo.</p>
+          </div>
+          <button class="icon-close" value="cancel" aria-label="Close">x</button>
+        </div>
+        <textarea id="exportText" rows="16" readonly></textarea>
+        <div class="button-row end">
+          <button class="secondary-action" id="copyExportButton" type="button">Copy packet</button>
+          <button class="primary-action" value="cancel">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js?v=ece-gemma-6"></script>
+  </body>
+</html>

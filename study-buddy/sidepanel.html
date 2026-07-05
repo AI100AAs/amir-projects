@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Study Buddy</title>
+  <link rel="stylesheet" href="popup.css" />
+  <style>
+    body { width: auto; min-height: 100vh; padding: 16px; background: var(--bg); }
+    .recent-list { list-style: none; padding: 0; margin: 0; }
+    .recent-list li { padding: 8px 10px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--input-border); margin-bottom: 8px; font-size: 0.85rem; }
+    .recent-list li .domain { color: var(--muted); font-size: 0.75rem; }
+    .recent-list li.allowed { border-left: 3px solid var(--accent); }
+    .recent-list li.blocked { border-left: 3px solid var(--danger); }
+    .theme-toggle { position: fixed; top: 12px; right: 12px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 1rem; cursor: pointer; }
+    .theme-toggle:hover { filter: brightness(1.1); }
+  </style>
+</head>
+<body>
+  <button id="themeToggle" class="theme-toggle" title="Toggle light/dark">☀</button>
+  <header>
+    <img src="icons/icon48.png" alt="" />
+    <h1>AI Study Buddy</h1>
+  </header>
+
+  <section id="setup" class="hidden">
+    <label>
+      Study goal
+      <input type="text" id="goal" placeholder="e.g. finish chapter 3 of calculus" />
+    </label>
+    <label>
+      Session length (minutes)
+      <input type="number" id="duration" value="45" min="5" max="240" />
+    </label>
+    <label>
+      Check-in interval (minutes)
+      <input type="number" id="checkIn" value="5" min="1" max="60" />
+    </label>
+    <button id="start" class="primary">Start focusing</button>
+  </section>
+
+  <section id="session" class="hidden">
+    <div class="status-pill" id="stateBadge">idle</div>
+    <h2 id="goalDisplay"></h2>
+    <div class="timer"><span id="timeRemaining">--:--</span> left</div>
+    <div class="stats" id="stats"></div>
+    <p id="lastMessage" class="message">Let’s get to work.</p>
+    <div class="actions">
+      <button id="break" class="secondary">Take a break</button>
+      <button id="stop" class="danger">End session</button>
+    </div>
+    <h3 style="margin-top: 20px; font-size: 0.95rem; color: var(--muted);">Recent tabs</h3>
+    <ul id="recentTabs" class="recent-list"></ul>
+  </section>
+
+  <script src="sidepanel.js" type="module"></script>
+</body>
+</html>

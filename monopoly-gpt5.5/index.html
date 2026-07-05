@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Metro Mogul</title>
+  <style>
+    :root {
+      --ink: #17201c;
+      --paper: #f4ecd8;
+      --board: #dbe7d1;
+      --red: #d83a34;
+      --gold: #f0b84c;
+      --panel: rgba(255,255,255,.78);
+      --shadow: 0 18px 50px rgba(26, 37, 30, .18);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, #fff8de 0 16%, transparent 38%),
+        linear-gradient(135deg, #e8dfc8, #c8d9c4);
+    }
+    button, select, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: minmax(620px, 1fr) 360px; }
+    .game-area { padding: 28px; display: grid; place-items: center; }
+    .board {
+      width: min(78vw, 820px);
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-columns: 1.35fr repeat(9, 1fr) 1.35fr;
+      grid-template-rows: 1.35fr repeat(9, 1fr) 1.35fr;
+      background: var(--board);
+      border: 4px solid var(--ink);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .space {
+      position: relative;
+      border: 1px solid rgba(23,32,28,.65);
+      background: rgba(255,255,255,.34);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      user-select: none;
+    }
+    .space-name { font-size: clamp(7px, .7vw, 10px); font-weight: 800; line-height: 1.05; z-index: 1; }
+    .space-price { font-size: clamp(7px, .65vw, 9px); opacity: .7; margin-top: 3px; }
+    .color-bar { position: absolute; background: var(--color); }
+    .bottom .color-bar { top: 0; left: 0; right: 0; height: 24%; border-bottom: 1px solid var(--ink); }
+    .top .color-bar { bottom: 0; left: 0; right: 0; height: 24%; border-top: 1px solid var(--ink); }
+    .left .color-bar { right: 0; top: 0; bottom: 0; width: 24%; border-left: 1px solid var(--ink); }
+    .right .color-bar { left: 0; top: 0; bottom: 0; width: 24%; border-right: 1px solid var(--ink); }
+    .corner { background: rgba(255,255,255,.55); }
+    .corner .space-name { font-size: clamp(9px, .9vw, 13px); }
+    .owner {
+      position: absolute; width: 10px; height: 10px; border-radius: 50%;
+      right: 4px; bottom: 4px; border: 2px solid white; box-shadow: 0 1px 3px #0005;
+    }
+    .tokens { position: absolute; inset: 27% 5% 5%; display: flex; align-items: center; justify-content: center; gap: 2px; flex-wrap: wrap; z-index: 3; }
+    .token {
+      width: clamp(13px, 1.4vw, 19px); height: clamp(13px, 1.4vw, 19px); border-radius: 50% 50% 45% 45%;
+      display: grid; place-items: center; color: white; font-size: 9px; font-weight: 900;
+      border: 2px solid white; box-shadow: 0 2px 5px #0006; transform: rotate(-8deg);
+    }
+    .center {
+      grid-column: 2 / 11; grid-row: 2 / 11; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center; padding: 9%; position: relative;
+    }
+    .center:before {
+      content: ""; position: absolute; width: 58%; height: 58%; border: 2px solid rgba(23,32,28,.14);
+      transform: rotate(-45deg); border-radius: 6px;
+    }
+    .brand { transform: rotate(-45deg); z-index: 1; }
+    .brand .eyebrow { letter-spacing: .28em; font-weight: 900; font-size: clamp(8px, 1vw, 13px); }
+    h1 {
+      margin: 8px 0; padding: .08em .22em; color: white; background: var(--red);
+      font-family: Georgia, serif; font-style: italic; font-size: clamp(26px, 5vw, 68px);
+      line-height: .95; box-shadow: 5px 5px 0 rgba(23,32,28,.18);
+    }
+    .brand p { margin: 8px 0; font-size: clamp(8px, .9vw, 12px); font-weight: 700; }
+    .dice-stage { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 9px; }
+    .die {
+      width: clamp(31px, 4vw, 48px); aspect-ratio: 1; background: #fff; border: 2px solid var(--ink);
+      border-radius: 8px; display: grid; place-items: center; font-size: clamp(21px, 3vw, 34px);
+      box-shadow: 4px 4px 0 rgba(23,32,28,.2);
+    }
+    .die.rolling { animation: tumble .18s linear infinite; }
+    @keyframes tumble { 50% { transform: rotate(12deg) scale(.92); } }
+    .sidebar {
+      height: 100vh; overflow-y: auto; padding: 24px; background: rgba(247,242,224,.94);
+      border-left: 1px solid rgba(23,32,28,.18); box-shadow: -10px 0 35px #35452d1c;
+    }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .topline h2 { margin: 0; font-family: Georgia, serif; font-size: 25px; }
+    .icon-btn { border: 1px solid #17201c33; border-radius: 999px; background: #fff8; padding: 7px 11px; font-size: 12px; font-weight: 800; }
+    .card {
+      background: var(--panel); border: 1px solid rgba(23,32,28,.12); border-radius: 16px;
+      padding: 14px; margin-bottom: 12px; box-shadow: 0 7px 20px rgba(23,32,28,.06);
+    }
+    .turn-card { border: 2px solid var(--active, var(--ink)); }
+    .turn-label { font-size: 10px; text-transform: uppercase; letter-spacing: .18em; font-weight: 900; opacity: .6; }
+    .turn-name { display: flex; align-items: center; gap: 9px; margin: 5px 0 3px; font-family: Georgia, serif; font-size: 25px; font-weight: bold; }
+    .dot { width: 13px; height: 13px; border-radius: 50%; background: var(--active); }
+    .cash { color: #28613f; font-size: 19px; font-weight: 900; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 13px; }
+    .actions button, .setup button {
+      border: 0; border-radius: 10px; padding: 11px 8px; font-weight: 900; background: var(--ink); color: white;
+      box-shadow: 0 4px 0 #0003; transition: .15s ease;
+    }
+    .actions button:hover:not(:disabled), .setup button:hover { transform: translateY(-1px); }
+    .actions button:disabled { opacity: .28; cursor: not-allowed; box-shadow: none; }
+    .actions .buy { background: #28744c; }
+    .actions .end { background: var(--red); }
+    .player { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid #17201c18; }
+    .player:last-child { border: 0; }
+    .player-token { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; color: white; font-weight: 900; }
+    .player strong, .player small { display: block; }
+    .player small { opacity: .55; margin-top: 2px; }
+    .player-money { font-weight: 900; }
+    .player.bankrupt { opacity: .35; text-decoration: line-through; }
+    .section-title { margin: 0 0 8px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .6; }
+    .log { max-height: 200px; overflow-y: auto; font-size: 12px; line-height: 1.4; }
+    .log-item { padding: 7px 0; border-bottom: 1px solid #17201c13; }
+    .log-item:first-child { font-weight: 800; }
+    .setup-screen {
+      position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px;
+      background: rgba(21,31,25,.76); backdrop-filter: blur(12px);
+    }
+    .setup {
+      width: min(480px, 100%); background: #f7f0dd; border-radius: 24px; padding: 28px;
+      box-shadow: 0 30px 100px #0007; border: 2px solid #fff8;
+    }
+    .setup h2 { margin: 0 0 4px; font: bold 36px Georgia, serif; }
+    .setup p { margin: 0 0 22px; opacity: .65; }
+    .setup label { display: block; margin: 14px 0 6px; font-weight: 800; font-size: 12px; }
+    .setup select, .setup input { width: 100%; padding: 11px 12px; border: 1px solid #17201c44; border-radius: 9px; background: white; }
+    .names { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .setup button { width: 100%; margin-top: 20px; padding: 14px; background: var(--red); }
+    .modal {
+      position: fixed; inset: 0; z-index: 15; display: none; place-items: center; padding: 20px;
+      background: rgba(21,31,25,.62); backdrop-filter: blur(7px);
+    }
+    .modal.show { display: grid; }
+    .modal-box { width: min(420px, 100%); text-align: center; background: #fff9e9; border-radius: 20px; padding: 26px; box-shadow: var(--shadow); }
+    .modal-icon { font-size: 42px; }
+    .modal h3 { margin: 8px 0; font: bold 28px Georgia, serif; }
+    .modal p { line-height: 1.5; opacity: .72; }
+    .modal button { border: 0; border-radius: 10px; padding: 11px 24px; background: var(--ink); color: white; font-weight: 900; }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .game-area { padding: 10px; }
+      .board { width: min(96vw, 760px); }
+      .sidebar { height: auto; border-left: 0; border-top: 1px solid #0002; }
+    }
+    @media (max-width: 650px) {
+      .game-area { overflow-x: auto; justify-content: start; }
+      .board { width: 620px; }
+      .sidebar { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="game-area"><div class="board" id="board"></div></section>
+    <aside class="sidebar">
+      <div class="topline"><h2>Game Desk</h2><button class="icon-btn" id="newGame">New game</button></div>
+      <div class="card turn-card" id="turnCard">
+        <div class="turn-label">Current turn</div>
+        <div class="turn-name"><span class="dot"></span><span id="turnName">Player 1</span></div>
+        <div class="cash" id="turnCash">$1,500</div>
+        <div class="actions">
+          <button id="rollBtn">Roll dice</button>
+          <button class="buy" id="buyBtn" disabled>Buy property</button>
+          <button id="jailBtn" disabled>Pay jail fee</button>
+          <button class="end" id="endBtn" disabled>End turn</button>
+        </div>
+      </div>
+      <div class="card"><h3 class="section-title">Players</h3><div id="players"></div></div>
+      <div class="card"><h3 class="section-title">Game log</h3><div class="log" id="log"></div></div>
+      <div class="card">
+        <h3 class="section-title">Quick rules</h3>
+        <div style="font-size:12px;line-height:1.55;opacity:.7">Roll, move, and buy unowned streets. Landing on a rival's property pays rent. Pass GO for $200. Last solvent player wins.</div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="setup-screen" id="setupScreen">
+    <form class="setup" id="setupForm">
+      <div style="font-size:11px;letter-spacing:.22em;font-weight:900;color:#d83a34">WELCOME TO</div>
+      <h2>Metro Mogul</h2>
+      <p>A fast local property-trading game.</p>
+      <label for="playerCount">Number of players</label>
+      <select id="playerCount"><option value="2">2 players</option><option value="3">3 players</option><option value="4">4 players</option></select>
+      <label>Player names</label>
+      <div class="names" id="nameFields"></div>
+      <button type="submit">Start the game</button>
+    </form>
+  </div>
+  <div class="modal" id="modal"><div class="modal-box"><div class="modal-icon" id="modalIcon">★</div><h3 id="modalTitle"></h3><p id="modalText"></p><button id="modalClose">Continue</button></div></div>
+
+  <script>
+    const COLORS = ["#e34e45", "#3577d4", "#e4a429", "#6e4bc2"];
+    const ICONS = ["A", "B", "C", "D"];
+    const spaces = [
+      {name:"GO", type:"go"},
+      {name:"Copper Lane", type:"property", price:60, rent:10, color:"#8b5b43"},
+      {name:"Community Fund", type:"community"},
+      {name:"Maple Avenue", type:"property", price:60, rent:12, color:"#8b5b43"},
+      {name:"City Tax", type:"tax", amount:100},
+      {name:"North Station", type:"rail", price:200, rent:35},
+      {name:"Skyline Road", type:"property", price:100, rent:18, color:"#78cde8"},
+      {name:"Chance", type:"chance"},
+      {name:"Harbor Street", type:"property", price:100, rent:18, color:"#78cde8"},
+      {name:"Cloud Avenue", type:"property", price:120, rent:22, color:"#78cde8"},
+      {name:"Jail / Visiting", type:"jail"},
+      {name:"Orchid Road", type:"property", price:140, rent:26, color:"#df72a7"},
+      {name:"Electric Co.", type:"utility", price:150, rent:30},
+      {name:"Rose Avenue", type:"property", price:140, rent:26, color:"#df72a7"},
+      {name:"Regent Street", type:"property", price:160, rent:30, color:"#df72a7"},
+      {name:"East Station", type:"rail", price:200, rent:35},
+      {name:"Amber Street", type:"property", price:180, rent:34, color:"#ee9146"},
+      {name:"Community Fund", type:"community"},
+      {name:"Citrus Avenue", type:"property", price:180, rent:34, color:"#ee9146"},
+      {name:"Sunset Drive", type:"property", price:200, rent:38, color:"#ee9146"},
+      {name:"Free Parking", type:"parking"},
+      {name:"Crimson Road", type:"property", price:220, rent:42, color:"#d94841"},
+      {name:"Chance", type:"chance"},
+      {name:"Ruby Avenue", type:"property", price:220, rent:42, color:"#d94841"},
+      {name:"Festival Street", type:"property", price:240, rent:46, color:"#d94841"},
+      {name:"South Station", type:"rail", price:200, rent:35},
+      {name:"Golden Avenue", type:"property", price:260, rent:50, color:"#e8c930"},
+      {name:"Marigold Road", type:"property", price:260, rent:50, color:"#e8c930"},
+      {name:"Water Works", type:"utility", price:150, rent:30},
+      {name:"Market Street", type:"property", price:280, rent:55, color:"#e8c930"},
+      {name:"Go To Jail", type:"gotojail"},
+      {name:"Emerald Avenue", type:"property", price:300, rent:60, color:"#3c9d69"},
+      {name:"Pine Street", type:"property", price:300, rent:60, color:"#3c9d69"},
+      {name:"Community Fund", type:"community"},
+      {name:"Garden Drive", type:"property", price:320, rent:65, color:"#3c9d69"},
+      {name:"West Station", type:"rail", price:200, rent:35},
+      {name:"Chance", type:"chance"},
+      {name:"Midnight Avenue", type:"property", price:350, rent:75, color:"#4168af"},
+      {name:"Luxury Tax", type:"tax", amount:150},
+      {name:"Crown Boulevard", type:"property", price:400, rent:90, color:"#4168af"}
+    ];
+
+    let state = null;
+    const $ = id => document.getElementById(id);
+    const money = n => "$" + Math.max(0, n).toLocaleString();
+    const sideClass = i => i === 0 || i === 10 || i === 20 || i === 30 ? "corner" : i < 10 ? "bottom" : i < 20 ? "left" : i < 30 ? "top" : "right";
+    function gridPos(i) {
+      if (i === 0) return [11,11]; if (i <= 9) return [11,11-i]; if (i === 10) return [11,1];
+      if (i <= 19) return [21-i,1]; if (i === 20) return [1,1];
+      if (i <= 29) return [1,i-19]; if (i === 30) return [1,11];
+      return [i-29,11];
+    }
+    function renderBoard() {
+      const board = $("board"); board.innerHTML = '<div class="center"><div class="brand"><div class="eyebrow">BUY • TRADE • BUILD</div><h1>Metro<br>Mogul</h1><p>MAKE YOUR MOVE</p><div class="dice-stage"><div class="die" id="die1">⚀</div><div class="die" id="die2">⚀</div></div></div></div>';
+      spaces.forEach((s,i) => {
+        const [row,col] = gridPos(i), el = document.createElement("div");
+        el.className = `space ${sideClass(i)}`; el.style.gridRow = row; el.style.gridColumn = col; el.dataset.index = i;
+        const bar = s.color ? `<div class="color-bar" style="--color:${s.color}"></div>` : "";
+        const symbol = s.type === "chance" ? " ? " : s.type === "community" ? " ◇ " : s.type === "rail" ? " ◆ " : s.type === "tax" ? " TAX " : "";
+        el.innerHTML = `${bar}<div><div class="space-name">${symbol}${s.name}</div>${s.price ? `<div class="space-price">${money(s.price)}</div>`:""}</div><div class="tokens"></div>`;
+        board.appendChild(el);
+      });
+    }
+    function render() {
+      if (!state) return;
+      document.querySelectorAll(".owner").forEach(x => x.remove());
+      document.querySelectorAll(".tokens").forEach(x => x.innerHTML = "");
+      state.players.forEach((p, pi) => {
+        if (p.bankrupt) return;
+        const token = document.createElement("span"); token.className = "token"; token.style.background = p.color; token.textContent = p.icon;
+        document.querySelector(`.space[data-index="${p.pos}"] .tokens`).appendChild(token);
+      });
+      spaces.forEach((s,i) => {
+        if (s.owner != null) {
+          const o = document.createElement("span"); o.className = "owner"; o.style.background = state.players[s.owner].color;
+          document.querySelector(`.space[data-index="${i}"]`).appendChild(o);
+        }
+      });
+      const p = current();
+      $("turnCard").style.setProperty("--active", p.color); $("turnName").textContent = p.name; $("turnCash").textContent = money(p.cash);
+      $("players").innerHTML = state.players.map((x,i) => `<div class="player ${x.bankrupt?"bankrupt":""}">
+        <div class="player-token" style="background:${x.color}">${x.icon}</div><div><strong>${x.name}${i===state.turn?" •":""}</strong><small>${x.properties.length} properties${x.inJail?" • In jail":""}</small></div><div class="player-money">${money(x.cash)}</div></div>`).join("");
+      $("log").innerHTML = state.log.map(x => `<div class="log-item">${x}</div>`).join("");
+      $("rollBtn").disabled = state.phase !== "roll";
+      const landed = spaces[p.pos], canBuy = state.phase === "action" && landed.price && landed.owner == null && p.cash >= landed.price;
+      $("buyBtn").disabled = !canBuy;
+      $("jailBtn").disabled = !(state.phase === "roll" && p.inJail && p.cash >= 50);
+      $("endBtn").disabled = state.phase !== "action";
+    }
+    function current() { return state.players[state.turn]; }
+    function addLog(text) { state.log.unshift(text); state.log = state.log.slice(0,30); }
+    function showModal(icon,title,text, callback) {
+      $("modalIcon").textContent=icon; $("modalTitle").textContent=title; $("modalText").textContent=text; $("modal").classList.add("show");
+      $("modalClose").onclick=()=>{ $("modal").classList.remove("show"); if(callback) callback(); };
+    }
+    function charge(p, amount, recipient=null, reason="a fee") {
+      p.cash -= amount;
+      if (recipient) recipient.cash += amount;
+      addLog(`${p.name} paid ${money(amount)} ${recipient ? `to ${recipient.name}` : `for ${reason}`}.`);
+      if (p.cash < 0) bankrupt(p, recipient);
+    }
+    function bankrupt(p, recipient) {
+      p.bankrupt = true;
+      p.properties.forEach(i => { spaces[i].owner = recipient ? state.players.indexOf(recipient) : null; if(recipient) recipient.properties.push(i); });
+      p.properties = [];
+      addLog(`${p.name} is bankrupt.`);
+      const alive = state.players.filter(x=>!x.bankrupt);
+      if (alive.length === 1) showModal("★", `${alive[0].name} wins!`, `With ${money(alive[0].cash)} and ${alive[0].properties.length} properties, the city belongs to them.`, ()=>$("setupScreen").style.display="grid");
+    }
+    function drawCard(type) {
+      const p=current();
+      const cards = type === "chance" ? [
+        ["Lucky break! Collect $150.",150], ["Street repairs. Pay $80.",-80], ["Advance to GO and collect $200.","go"],
+        ["Go directly to Jail.","jail"], ["Investment pays off. Collect $100.",100], ["Parking ticket. Pay $40.",-40]
+      ] : [
+        ["Tax refund. Collect $100.",100], ["Hospital fee. Pay $50.",-50], ["Birthday! Collect $60.",60],
+        ["School fund. Pay $70.",-70], ["Community prize. Collect $120.",120], ["Go directly to Jail.","jail"]
+      ];
+      const card = cards[Math.floor(Math.random()*cards.length)];
+      if (card[1] === "go") { p.pos=0; p.cash+=200; }
+      else if (card[1] === "jail") { p.pos=10; p.inJail=true; p.jailTurns=0; }
+      else if (card[1] > 0) p.cash += card[1];
+      else charge(p, -card[1], null, "the card");
+      addLog(`${type === "chance" ? "Chance" : "Community"}: ${card[0]}`);
+      showModal(type==="chance"?"?":"◇", type==="chance"?"Chance":"Community Fund", card[0]); render();
+    }
+    function resolveSpace(diceTotal) {
+      const p=current(), s=spaces[p.pos];
+      if (s.type === "gotojail") { p.pos=10; p.inJail=true; p.jailTurns=0; addLog(`${p.name} was sent to jail.`); showModal("▣","Go to Jail","No passing GO. No collecting $200."); }
+      else if (s.type === "chance" || s.type === "community") drawCard(s.type);
+      else if (s.type === "tax") charge(p,s.amount,null,s.name);
+      else if (s.owner != null && s.owner !== state.turn) {
+        const owner=state.players[s.owner]; let rent=s.rent;
+        if (s.type==="rail") rent=35 * owner.properties.filter(i=>spaces[i].type==="rail").length;
+        if (s.type==="utility") rent=diceTotal * 5;
+        charge(p,rent,owner,"rent");
+      } else if (s.price && s.owner == null) addLog(`${s.name} is available for ${money(s.price)}.`);
+      else addLog(`${p.name} landed on ${s.name}.`);
+      state.phase="action"; render();
+    }
+    function rollDice() {
+      if(state.phase!=="roll") return;
+      const p=current();
+      if(p.inJail) {
+        p.jailTurns++;
+        if(p.jailTurns<3) { addLog(`${p.name} waits in jail (${p.jailTurns}/3).`); state.phase="action"; render(); return; }
+        charge(p,50,null,"release from jail"); p.inJail=false; addLog(`${p.name} leaves jail after paying $50.`);
+      }
+      state.phase="moving"; render();
+      const d1=1+Math.floor(Math.random()*6), d2=1+Math.floor(Math.random()*6);
+      ["die1","die2"].forEach(id=>$("board").querySelector("#"+id).classList.add("rolling"));
+      setTimeout(()=>{
+        $("board").querySelector("#die1").textContent="⚀⚁⚂⚃⚄⚅"[d1-1]; $("board").querySelector("#die2").textContent="⚀⚁⚂⚃⚄⚅"[d2-1];
+        ["die1","die2"].forEach(id=>$("board").querySelector("#"+id).classList.remove("rolling"));
+        const old=p.pos; p.pos=(p.pos+d1+d2)%40;
+        if(p.pos<old){p.cash+=200; addLog(`${p.name} passed GO and collected $200.`);}
+        addLog(`${p.name} rolled ${d1} + ${d2} and moved to ${spaces[p.pos].name}.`);
+        resolveSpace(d1+d2);
+      },650);
+    }
+    function buyProperty() {
+      const p=current(), s=spaces[p.pos];
+      if(state.phase!=="action" || !s.price || s.owner!=null || p.cash<s.price) return;
+      p.cash-=s.price; s.owner=state.turn; p.properties.push(p.pos); addLog(`${p.name} bought ${s.name} for ${money(s.price)}.`); render();
+    }
+    function endTurn() {
+      if(state.phase!=="action") return;
+      let next=state.turn; do { next=(next+1)%state.players.length; } while(state.players[next].bankrupt);
+      state.turn=next; state.phase="roll"; addLog(`It is ${current().name}'s turn.`); render();
+    }
+    function startGame(names) {
+      spaces.forEach(s=>delete s.owner);
+      state={players:names.map((name,i)=>({name:name||`Player ${i+1}`,color:COLORS[i],icon:ICONS[i],cash:1500,pos:0,properties:[],bankrupt:false,inJail:false,jailTurns:0})),turn:0,phase:"roll",log:["Game started. Roll the dice!"]};
+      $("setupScreen").style.display="none"; render();
+    }
+    function updateNames() {
+      const count=+$("playerCount").value, existing=[...document.querySelectorAll(".player-name")].map(x=>x.value);
+      $("nameFields").innerHTML=Array.from({length:count},(_,i)=>`<input class="player-name" maxlength="14" value="${existing[i]||`Player ${i+1}`}" aria-label="Player ${i+1} name">`).join("");
+    }
+    $("playerCount").addEventListener("change",updateNames);
+    $("setupForm").addEventListener("submit",e=>{e.preventDefault();startGame([...document.querySelectorAll(".player-name")].map(x=>x.value.trim()));});
+    $("rollBtn").onclick=rollDice; $("buyBtn").onclick=buyProperty; $("endBtn").onclick=endTurn;
+    $("jailBtn").onclick=()=>{const p=current(); if(p.inJail&&p.cash>=50){charge(p,50,null,"release from jail");p.inJail=false;p.jailTurns=0;addLog(`${p.name} paid to leave jail.`);render();}};
+    $("newGame").onclick=()=>{ $("setupScreen").style.display="grid"; };
+    renderBoard(); updateNames();
+  </script>
+</body>
+</html>

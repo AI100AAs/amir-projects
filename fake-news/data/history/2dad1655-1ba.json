@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "id": "2dad1655-1ba",
+    "timestamp": 1779240001.002309,
+    "date": "2026-05-19 18:20",
+    "text_preview": "http://news.bbc.co.uk/2/hi/uk_news/magazine/7540427.stm",
+    "text_input": "",
+    "url_input": "http://news.bbc.co.uk/2/hi/uk_news/magazine/7540427.stm",
+    "mode": "llm",
+    "overall_score": 0.95,
+    "overall_verdict": "likely credible",
+    "claim_count": 3,
+    "has_api_key": true,
+    "model_name": "arcee-ai/trinity-large-thinking:free"
+  },
+  "result": {
+    "article": {
+      "title": "Do they really think the earth is flat?",
+      "source": "http://news.bbc.co.uk/2/hi/uk_news/magazine/7540427.stm",
+      "text_preview": "Photos such as this one are deemed fakes by flat-earthers\n\nIn the 21st Century, the term \"flat-earther\" is used to describe someone who is spectacularly - and seemingly wilfully - ignorant. But there is a group of people who claim they believe the planet really is flat. Are they really out there or is it all an elaborate prank?\n\nNasa is celebrating its 50th birthday with much fanfare and pictures of past glories. But in half a century of extraordinary images of space, one stands out.\n\nWORLD VIEW\n\n330 BC Aristotle provides evidence of spherical earth\n\n240 BC Eratosthenes of Cyrene accurately calculates circumference of globe\n\n8th Century AD work by Bede shows acceptance of sphere idea\n\nOn 24 December 1968, the crew of the Apollo 8 mission took a photo now known as Earthrise. To many, this beautiful blue sphere viewed from the moon's orbit is a perfect visual summary of why it is right to strive to go into space.\n\nNot to everybody though. There are people who say they think this image is fake - part of a worldwide conspiracy by space agencies, governments and scientists.\n\nWelcome to the world of the flat-earther.\n\nOur attitude towards those who once upon a time believed in the flatness of the earth is apparent in a new Microsoft advert.\n\nOne rendition of what a flat earth might look like\n\nDepicting an olden-days ship sailing on rough seas, presumably heading towards the \"edge of the world\", the advert is part of a $300m campaign aimed at rescuing the reputation of Windows Vista by comparing its critics to flat-earthers.\n\nSatellite era\n\nBut are there any genuine flat-earthers left? Surely in our era of space exploration - where satellites take photos of our blue and clearly globular planet from space, and robots send back info about soil and water from Mars - no one can seriously still believe that the Earth is flat?\n\nCircumnavigation is a case of travelling in a very broad circle across the surface of the Earth\n\nJames McIntyre\n\nFlat-earther\n\nWrong.\n\nFlat earth theory "
+    },
+    "claims": [
+      {
+        "text": "There are contemporary flat-earthers who actively promote the belief that the Earth is flat, with individuals and groups meeting in Britain and the US to challenge the scientific consensus.",
+        "verdict": "true",
+        "confidence": 0.95,
+        "evidence": [
+          "Documented flat Earth conventions in Britain and the US",
+          "Online presence and promotional activities of flat Earth groups",
+          "Media coverage of contemporary flat Earth movement"
+        ],
+        "explanation": "The claim accurately describes the existence of contemporary flat Earth believers and their organized activities. While the knowledge base confirms that the Earth is not actually flat (making flat Earth belief scientifically false), this claim is about the existence of people who hold and promote these beliefs, not about the scientific accuracy of those beliefs. There is documented evidence of flat Earth conventions, meetings, and promotional activities in Britain and the US, with groups actively challenging scientific consensus."
+      },
+      {
+        "text": "Flat-earthers claim that photographs of Earth from space, such as the Apollo 8 Earthrise image, are fake and part of a worldwide conspiracy by space agencies, governments, and scientists.",
+        "verdict": "true",
+        "confidence": 0.95,
+        "evidence": [
+          "Flat Earth movement literature and public statements by prominent flat-earthers",
+          "Documented examples of flat-earthers challenging space agency photos on social media and in public forums"
+        ],
+        "explanation": "The claim accurately describes what flat-earthers believe - that photographs of Earth from space are fake and part of a worldwide conspiracy. This is a factual statement about flat-earthers' claims, not an endorsement of those claims themselves. The claim is reporting on the existence of these conspiracy theories held by flat-earthers, which is verifiably true based on numerous flat Earth materials and public statements."
+      },
+      {
+        "text": "According to flat-earthers, the Earth is disc-shaped, with the North Pole at the center and Antarctica forming the entire circumference, making circumnavigation a broad circular journey across the surface.",
+        "verdict": "true",
+        "confidence": 0.95,
+        "evidence": [
+          "Flat-earth model description matches documented flat-earth beliefs (North Pole at center, Antarctica as circumference ring)",
+          "Knowledge base confirms 'The Earth is flat' is false, but this claim is reporting flat-earther beliefs, not asserting them as fact"
+        ],
+        "explanation": "The claim accurately describes the flat-earth model as believed by flat-earthers. It correctly states that according to this model, the Earth is a flat disc with the North Pole at the center and Antarctica forming the outer edge/circumference. Circumnavigation would indeed be a broad circular journey across the disc's surface. This is a factual description of flat-earther beliefs, not an assertion that the Earth is actually flat."
+      }
+    ],
+    "overall_score": 0.95,
+    "overall_verdict": "likely credible",
+    "summary": "3 claim(s) found true",
+    "warnings": [
+      "Emotional manipulation language: 'spectacularly - and seemingly wilfully - ignorant' uses emotionally charged descriptors to dismiss flat-earthers.",
+      "Lack of verifiable source for the Microsoft Vista advert claim: the article describes the advert but does not provide a specific citation or source.",
+      "Potential bias: the article presents flat-earthers' claims without immediately providing strong counter-evidence, which could be seen as giving undue credibility to fringe theories."
+    ],
+    "mode": "llm",
+    "model_info": {
+      "name": "arcee-ai/trinity-large-thinking:free",
+      "mode": "llm"
+    }
+  }
+}

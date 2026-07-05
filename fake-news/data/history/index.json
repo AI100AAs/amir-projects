@@ -1,0 +1,30 @@
+[
+  {
+    "id": "2dad1655-1ba",
+    "timestamp": 1779240001.002309,
+    "date": "2026-05-19 18:20",
+    "text_preview": "http://news.bbc.co.uk/2/hi/uk_news/magazine/7540427.stm",
+    "text_input": "",
+    "url_input": "http://news.bbc.co.uk/2/hi/uk_news/magazine/7540427.stm",
+    "mode": "llm",
+    "overall_score": 0.95,
+    "overall_verdict": "likely credible",
+    "claim_count": 3,
+    "has_api_key": true,
+    "model_name": "arcee-ai/trinity-large-thinking:free"
+  },
+  {
+    "id": "9152c575-107",
+    "timestamp": 1779239868.9016051,
+    "date": "2026-05-19 18:17",
+    "text_preview": "https://www.cnn.com/2026/05/19/africa/ebola-outbreak-drc-uganda-who-chief-intl",
+    "text_input": "",
+    "url_input": "https://www.cnn.com/2026/05/19/africa/ebola-outbreak-drc-uganda-who-chief-intl",
+    "mode": "llm",
+    "overall_score": 0.09,
+    "overall_verdict": "likely not credible",
+    "claim_count": 1,
+    "has_api_key": true,
+    "model_name": "arcee-ai/trinity-large-thinking:free"
+  }
+]

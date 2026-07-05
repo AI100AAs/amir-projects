@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StyleMate — Your Pocket Stylist</title>
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">✨</span>
+      <div>
+        <h1>StyleMate</h1>
+        <p class="tagline">Your pocket stylist</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="status" id="status" title="Model connection">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">checking…</span>
+      </span>
+      <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="create">Create</button>
+    <button class="tab" data-tab="history">History</button>
+  </nav>
+
+  <!-- CREATE TAB -->
+  <section class="tab-panel active" id="panel-create">
+    <div class="card">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload a photo">
+        <div class="drop-inner" id="dropInner">
+          <div class="drop-icon">📷</div>
+          <p class="drop-title">Drop a photo, paste, or tap to upload</p>
+          <p class="drop-sub">JPG or PNG · stays on your computer</p>
+        </div>
+        <img class="preview hidden" id="preview" alt="Your photo preview" />
+        <button class="change-photo hidden" id="changePhoto" type="button">Change photo</button>
+      </div>
+      <input type="file" id="file" accept="image/*" hidden />
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label for="occasion">Occasion</label>
+        <select id="occasion">
+          <option>Everyday casual</option>
+          <option>Work / office</option>
+          <option>Date night</option>
+          <option>Wedding guest</option>
+          <option>Party / night out</option>
+          <option>Brunch with friends</option>
+          <option>Job interview</option>
+          <option>Vacation / beach</option>
+          <option>Gym / athleisure</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Vibe</label>
+        <div class="chips" id="vibeChips">
+          <button class="chip" type="button" data-value="Minimal">Minimal</button>
+          <button class="chip" type="button" data-value="Classic">Classic</button>
+          <button class="chip" type="button" data-value="Boho">Boho</button>
+          <button class="chip" type="button" data-value="Edgy">Edgy</button>
+          <button class="chip" type="button" data-value="Sporty">Sporty</button>
+          <button class="chip" type="button" data-value="Glam">Glam</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="season">Season</label>
+          <select id="season">
+            <option value="">Any</option>
+            <option>Spring</option>
+            <option>Summer</option>
+            <option>Fall</option>
+            <option>Winter</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Budget</label>
+          <div class="chips" id="budgetChips">
+            <button class="chip" type="button" data-value="Budget-friendly">$</button>
+            <button class="chip" type="button" data-value="Mid-range">$$</button>
+            <button class="chip" type="button" data-value="Premium">$$$</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="notes">Anything else? <span class="muted">(optional)</span></label>
+        <input type="text" id="notes" maxlength="200"
+               placeholder="e.g. petite, love earth tones, hiding a coffee stain…" />
+      </div>
+
+      <button class="go" id="go" disabled>Get my outfit ideas ✨</button>
+    </div>
+
+    <div class="card result-card hidden" id="resultCard">
+      <div class="result-toolbar">
+        <h2 class="result-heading">Your suggestions</h2>
+        <div class="result-actions">
+          <button class="ghost-btn" id="copyBtn" title="Copy">Copy</button>
+          <button class="ghost-btn" id="regenBtn" title="Regenerate">Regenerate</button>
+        </div>
+      </div>
+      <div id="result" class="markdown"></div>
+    </div>
+  </section>
+
+  <!-- HISTORY TAB -->
+  <section class="tab-panel" id="panel-history">
+    <div class="history-empty hidden" id="historyEmpty">
+      <p>No looks yet. Create your first one!</p>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+</div>
+
+<!-- Modal for viewing a past look -->
+<div class="modal hidden" id="modal">
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+  <div class="modal-body">
+    <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    <img class="modal-img" id="modalImg" alt="Saved look" />
+    <div class="modal-meta" id="modalMeta"></div>
+    <div class="markdown" id="modalText"></div>
+    <button class="danger-btn" id="modalDelete">Delete this look</button>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

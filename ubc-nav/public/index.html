@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UBC Soft-Nav — route by vibe, not just speed</title>
+    <meta name="description" content="Campus navigation that routes by how you want to feel — scenic, calm, shaded, accessible — not just the shortest line." />
+    <link rel="stylesheet" href="vendor/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <aside id="panel">
+        <header class="panel-head">
+          <div>
+            <h1>UBC <span>Soft-Nav</span></h1>
+            <p class="tagline">Routes that match how you want to feel.</p>
+          </div>
+          <button id="theme-toggle" class="icon-btn" title="Toggle light/dark" aria-label="Toggle theme">◐</button>
+        </header>
+
+        <div id="ai-badge" class="badge" title="Which engine is interpreting your words">
+          <span class="dot"></span><span id="ai-badge-text">checking engine…</span>
+        </div>
+
+        <form id="route-form" autocomplete="off">
+          <div class="field">
+            <label for="start">Start</label>
+            <div class="row">
+              <select id="start"></select>
+              <button type="button" id="geo" class="icon-btn" title="Use my location" aria-label="Use my location">📍</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="dest">Destination</label>
+            <select id="dest" required></select>
+          </div>
+
+          <div class="field">
+            <span class="label">Or click the map to set:</span>
+            <div class="segmented" role="group" aria-label="Map click mode">
+              <button type="button" data-mode="start" class="seg">Start</button>
+              <button type="button" data-mode="dest" class="seg">Destination</button>
+              <button type="button" data-mode="off" class="seg active">Off</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="constraint">What kind of walk?</label>
+            <textarea id="constraint" rows="2" placeholder="e.g. I want a calming walk in the shade, avoid crowds"></textarea>
+            <div class="examples" id="examples"></div>
+          </div>
+
+          <button type="submit" id="go">Find my route</button>
+        </form>
+
+        <section id="interpretation" class="card hidden">
+          <div class="card-head">
+            <h2>How I read that</h2>
+            <span id="source-badge" class="mini-badge"></span>
+          </div>
+          <p id="mood-line"></p>
+          <p id="rationale" class="muted small"></p>
+          <div id="sliders"></div>
+          <p id="manual-note" class="tiny muted hidden">✏️ Adjusted manually — drag the sliders to fine-tune the route.</p>
+        </section>
+
+        <section id="route-summary" class="card hidden">
+          <h2>Your route</h2>
+          <p id="route-stats"></p>
+          <p id="comparison" class="small"></p>
+          <label class="checkline"><input type="checkbox" id="show-fastest" /> Show fastest route for comparison</label>
+          <div id="route-attrs"></div>
+        </section>
+
+        <section id="directions" class="card hidden">
+          <h2>Directions</h2>
+          <ol id="steps"></ol>
+        </section>
+
+        <section id="warnings" class="card warn hidden">
+          <h2>Worth knowing</h2>
+          <ul id="warning-list"></ul>
+        </section>
+
+        <div class="actions">
+          <button type="button" id="share" class="ghost-btn">🔗 Copy shareable link</button>
+        </div>
+
+        <details id="ethics" class="card subtle">
+          <summary>Privacy &amp; how this works</summary>
+          <p class="tiny muted">
+            "Scenic", "quiet" and "calming" are subjective. This app's idea of a nice
+            route comes from preset path attributes and a model's reading of your words —
+            it can be wrong, and it reflects whoever's preferences shaped it. Treat
+            suggestions as a starting point, not ground truth.
+          </p>
+          <p class="tiny muted">
+            No account, no database, no movement log. Your destination and request are
+            sent to the server only to interpret the constraint; routing runs in your
+            browser, and shareable links encode state in the URL, not on a server.
+          </p>
+        </details>
+
+        <footer class="tiny muted">Prototype · OpenStreetMap · approximate campus graph</footer>
+      </aside>
+
+      <main id="map"></main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="vendor/leaflet.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

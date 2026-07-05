@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Analysis Results — Truth Lens{% endblock %}
+{% block content %}
+
+<div class="fade-in space-y-6 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center flex-wrap gap-3">
+        <a href="/" class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            New Analysis
+        </a>
+        <div class="flex items-center gap-2 flex-wrap">
+            {% if result.mode == 'llm' %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">LLM-powered</span>
+            {% else %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">Local mode</span>
+            {% endif %}
+            {% if result.model_info and result.model_info.name %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                Model: {{ result.model_info.name }}
+            </span>
+            {% endif %}
+        </div>
+        <div class="ml-auto flex gap-1">
+            <button onclick="copyJSON()" class="text-xs px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                JSON
+            </button>
+            <button onclick="exportMD()" class="text-xs px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Article Info -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <h2 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ result.article.title }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Source: <span class="font-mono text-xs">{{ result.article.source }}</span></p>
+        {% if result.article.text_preview %}
+        <details class="text-sm">
+            <summary class="cursor-pointer text-blue-600 dark:text-blue-400 hover:underline font-medium">Preview text</summary>
+            <p class="mt-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap text-xs">{{ result.article.text_preview }}</p>
+        </details>
+        {% endif %}
+    </div>
+
+    <!-- Score Gauge + Score -->
+    {% set score = result.overall_score %}
+    {% set pct = (score * 100) | round | int %}
+    {% set gauge_color = '#22c55e' if score >= 0.7 else '#eab308' if score >= 0.4 else '#ef4444' %}
+    {% set circumference = 2 * 3.14159 * 54 %}
+    {% set offset = circumference - (score * circumference) %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold dark:text-gray-100">Overall Credibility Score</h2>
+            <span class="text-4xl font-bold {% if score >= 0.7 %}text-green-600 dark:text-green-400{% elif score >= 0.4 %}text-yellow-600 dark:text-yellow-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                {{ pct }}%
+            </span>
+        </div>
+        <div class="flex items-center gap-6 flex-wrap">
+            <div class="flex-shrink-0 relative w-28 h-28">
+                <svg class="w-full h-full" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
+                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:opacity-30"/>
+                    <circle cx="60" cy="60" r="54" fill="none" stroke="{{ gauge_color }}" stroke-width="8"
+                        stroke-dasharray="{{ circumference }}"
+                        stroke-dashoffset="{{ offset }}"
+                        stroke-linecap="round"
+                        style="transition: stroke-dashoffset 1s ease-in-out;"/>
+                </svg>
+                <span class="absolute inset-0 flex items-center justify-center text-xl font-bold {% if score >= 0.7 %}text-green-600 dark:text-green-400{% elif score >= 0.4 %}text-yellow-600 dark:text-yellow-400{% else %}text-red-600 dark:text-red-400{% endif %}">{{ pct }}%</span>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+                    <div class="h-3 rounded-full transition-all duration-700
+                        {% if score >= 0.7 %}bg-green-500 dark:bg-green-400
+                        {% elif score >= 0.4 %}bg-yellow-500 dark:bg-yellow-400
+                        {% else %}bg-red-500 dark:bg-red-400{% endif %}"
+                        style="width: {{ pct }}%">
+                    </div>
+                </div>
+                <p class="text-sm font-medium
+                    {% if score >= 0.7 %}text-green-700 dark:text-green-300
+                    {% elif score >= 0.4 %}text-yellow-700 dark:text-yellow-300
+                    {% else %}text-red-700 dark:text-red-300{% endif %}">
+                    {{ result.overall_verdict | upper }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ result.summary }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warnings -->
+    {% if result.warnings %}
+    <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl p-5">
+        <h3 class="font-semibold text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            Warnings
+        </h3>
+        <ul class="list-disc list-inside text-sm text-amber-700 dark:text-amber-400 space-y-1">
+            {% for w in result.warnings %}
+            <li>{{ w }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Claims -->
+    <h2 class="text-lg font-semibold dark:text-gray-100">Claim-by-Claim Breakdown</h2>
+
+    {% for claim in result.claims %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 slide-up">
+        <div class="flex items-start justify-between">
+            <div class="flex-1 mr-4">
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Claim {{ loop.index }}</p>
+                <p class="text-sm text-gray-900 dark:text-gray-100">{{ claim.text }}</p>
+            </div>
+            <div class="flex-shrink-0 text-center">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold
+                    {% if claim.verdict == 'true' %}bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300
+                    {% elif claim.verdict == 'false' %}bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300
+                    {% elif claim.verdict == 'misleading' %}bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300
+                    {% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300{% endif %}">
+                    {{ claim.verdict | upper }}
+                </span>
+                <div class="mt-1 text-lg font-bold
+                    {% if claim.verdict == 'true' %}text-green-600 dark:text-green-400
+                    {% elif claim.verdict == 'false' %}text-red-600 dark:text-red-400
+                    {% elif claim.verdict == 'misleading' %}text-yellow-600 dark:text-yellow-400
+                    {% else %}text-gray-500 dark:text-gray-400{% endif %}">
+                    {{ "%.0f" % (claim.confidence * 100) }}%
+                </div>
+            </div>
+        </div>
+
+        <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">{{ claim.explanation }}</p>
+
+        {% if claim.evidence %}
+        <details class="text-sm mt-3">
+            <summary class="cursor-pointer text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs">Sources &amp; Evidence</summary>
+            <ul class="mt-2 list-disc list-inside text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                {% for e in claim.evidence %}
+                <li>{{ e }}</li>
+                {% endfor %}
+            </ul>
+        </details>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <!-- Limitations -->
+    <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl p-5 text-sm text-amber-800 dark:text-amber-300">
+        <p class="font-medium mb-1">⚠️ Important Limitations</p>
+        <ul class="list-disc list-inside space-y-1">
+            <li>Scores are based on semantic similarity to the knowledge base — not true understanding</li>
+            <li>A "true" verdict means the claim matches known verified claims; a "false" verdict means it contradicts them</li>
+            <li>The knowledge base is small (25 seed claims) and reflects Western, institutional sources</li>
+            <li>Always verify fact-checks with independent sources</li>
+            <li>See <a href="/ethics" class="text-blue-700 dark:text-blue-400 hover:underline font-medium">Ethics page</a> for full discussion of bias, limitations, and risks</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+function copyJSON() {
+    const el = document.createElement('div');
+    el.textContent = '{{ result | tojson | safe }}';
+    navigator.clipboard.writeText(el.textContent).then(
+        () => showToast('JSON copied to clipboard', 'success'),
+        () => showToast('Failed to copy', 'error')
+    );
+}
+
+function exportMD() {
+    const result = {{ result | tojson | safe }};
+    let md = `# Truth Lens Analysis Report\n\n`;
+    md += `**Article:** ${result.article.title}\n`;
+    md += `**Source:** ${result.article.source}\n`;
+    md += `**Mode:** ${result.mode === 'llm' ? 'LLM-powered' : 'Local mode'}\n`;
+    if (result.model_info && result.model_info.name) md += `**Model:** ${result.model_info.name}\n`;
+    md += `**Overall Score:** ${Math.round(result.overall_score * 100)}%\n`;
+    md += `**Verdict:** ${result.overall_verdict.toUpperCase()}\n`;
+    md += `**Summary:** ${result.summary}\n\n---\n\n## Claim-by-Claim Breakdown\n\n`;
+    result.claims.forEach((c, i) => {
+        md += `### Claim ${i+1}: ${c.text}\n`;
+        md += `- **Verdict:** ${c.verdict.toUpperCase()}\n`;
+        md += `- **Confidence:** ${Math.round(c.confidence * 100)}%\n`;
+        md += `- **Explanation:** ${c.explanation}\n`;
+        if (c.evidence && c.evidence.length) {
+            md += `- **Evidence:**\n`;
+            c.evidence.forEach(e => md += `  - ${e}\n`);
+        }
+        md += `\n`;
+    });
+    if (result.warnings && result.warnings.length) {
+        md += `## Warnings\n\n`;
+        result.warnings.forEach(w => md += `- ${w}\n`);
+    }
+    md += `\n---\n*Generated by Truth Lens v2*\n`;
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'truth-lens-report.md'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Report downloaded', 'success');
+}
+</script>
+
+{% endblock %}

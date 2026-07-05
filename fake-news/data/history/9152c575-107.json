@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "id": "9152c575-107",
+    "timestamp": 1779239868.9016051,
+    "date": "2026-05-19 18:17",
+    "text_preview": "https://www.cnn.com/2026/05/19/africa/ebola-outbreak-drc-uganda-who-chief-intl",
+    "text_input": "",
+    "url_input": "https://www.cnn.com/2026/05/19/africa/ebola-outbreak-drc-uganda-who-chief-intl",
+    "mode": "llm",
+    "overall_score": 0.09,
+    "overall_verdict": "likely not credible",
+    "claim_count": 1,
+    "has_api_key": true,
+    "model_name": "arcee-ai/trinity-large-thinking:free"
+  },
+  "result": {
+    "article": {
+      "title": "EBOLA: Potential spread of virus warrants \u2018serious concern,\u2019 WHO",
+      "source": "https://www.cnn.com/2026/05/19/africa/ebola-outbreak-drc-uganda-who-chief-intl",
+      "text_preview": "The head of the World Health Organization said Tuesday the scale and speed of the deadly Ebola outbreak in the Democratic Republic of Congo (DRC) and Uganda \u201cwarrants serious concern,\u201d as healthcare workers struggle to reach hundreds of thousands of people displaced by conflict in hard-to-reach in parts of the region.\n\nWHO Director-General Dr. Tedros Adhanom Ghebreyesus said that more than 130 deaths are thought to be linked to the outbreak, with more than 500 suspected cases.\n\nTedros declared the outbreak a public health emergency of international concern on Saturday, the first time a WHO chief has done so before convening an emergency committee.\n\nIn an address to members of the World Health Assembly in Geneva on Tuesday, Tedros pointed to worrying factors that he said mean the outbreak has the potential to spread further and cause more deaths.\n\nCases have been reported in urban areas including Kampala, the city of Goma in the DRC and Bunia, \u201cwhich is a big city,\u201d he said.\n\nThere are also signs of healthcare-associated transmission of the virus, after deaths were reported among health workers, he said.\n\nFurthermore, Tedros said that insecurity due to conflict in the remote DRC province of Ituri \u2013 where the virus was first detected in early May \u2013 has intensified over the past two months, causing significant population movement in the area. \u201cOver 100,000 people have been newly displaced,\u201d Tedros said, warning that the movement of people during an Ebola outbreak could \u201cincrease the risk of further spread.\u201d\n\nFinally, Tedros noted that the epidemic is caused by the Bundibugyo strain, \u201ca species of Ebola virus for which there are no vaccines or therapeutics.\u201d\n\nThe WHO chief\u2019s statement comes amid a US deployment of a disaster assitance response team to the DRC and Uganda, according to a senior State Department official on Tuesday.\n\nEbola has an average fatality rate of 50%, according to WHO. The disease is spread through direct contact with the bodily fluids of an infect"
+    },
+    "claims": [
+      {
+        "text": "More than 130 deaths are thought to be linked to the Ebola outbreak, with more than 500 suspected cases.",
+        "verdict": "insufficient_evidence",
+        "confidence": 0.3,
+        "evidence": [],
+        "explanation": "The provided knowledge base does not contain any verified information about Ebola outbreaks. Without specific details about which Ebola outbreak is being referenced or access to official statistics from health organizations like WHO or CDC, I cannot verify the accuracy of the claim about 130 deaths and 500 suspected cases."
+      }
+    ],
+    "overall_score": 0.09,
+    "overall_verdict": "likely not credible",
+    "summary": "No claims could be verified",
+    "warnings": [
+      "Specific statistics (130 deaths, 500 cases) lack direct citations to official WHO reports or data sources",
+      "Claims about the declaration of public health emergency need verification through official WHO documents"
+    ],
+    "mode": "llm",
+    "model_info": {
+      "name": "arcee-ai/trinity-large-thinking:free",
+      "mode": "llm"
+    }
+  }
+}

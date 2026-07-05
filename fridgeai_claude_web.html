@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FridgeAI — Meal Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-50: #E8F5EC;
+    --green-100: #C3E6CC;
+    --green-400: #4CAF72;
+    --green-600: #2E7D4F;
+    --green-900: #0D2B1A;
+    --cream: #F9F6F0;
+    --cream-dark: #F0EBE1;
+    --text: #1A1A18;
+    --text-muted: #6B6860;
+    --text-light: #9A9890;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --white: #FFFFFF;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --sidebar: 260px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── API KEY GATE ─── */
+  #api-gate {
+    position: fixed; inset: 0; background: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 2rem;
+  }
+  .gate-card {
+    background: var(--white); border-radius: var(--radius-lg);
+    padding: 3rem 2.5rem; max-width: 460px; width: 100%;
+    box-shadow: var(--shadow-lg); text-align: center;
+  }
+  .gate-logo { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--green-600); margin-bottom: 0.5rem; }
+  .gate-subtitle { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.5; }
+  .gate-label { display: block; text-align: left; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .gate-input {
+    width: 100%; padding: 12px 16px; border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm); font-size: 0.9rem; font-family: inherit;
+    background: var(--cream); color: var(--text); outline: none; margin-bottom: 1rem;
+    transition: border-color 0.15s;
+  }
+  .gate-input:focus { border-color: var(--green-400); }
+  .gate-btn {
+    width: 100%; padding: 13px; background: var(--green-600); color: white;
+    border: none; border-radius: var(--radius-sm); font-family: inherit;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s;
+  }
+  .gate-btn:hover { background: var(--green-900); }
+  .gate-note { font-size: 0.75rem; color: var(--text-light); margin-top: 1rem; line-height: 1.5; }
+  .gate-note a { color: var(--green-600); text-decoration: none; }
+
+  /* ─── LAYOUT ─── */
+  #app { display: flex; min-height: 100vh; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: var(--sidebar); min-height: 100vh; background: var(--green-900);
+    display: flex; flex-direction: column; position: fixed; left: 0; top: 0;
+    z-index: 10; padding: 0;
+  }
+  .sidebar-logo {
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: white; }
+  .logo-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+
+  .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s;
+    color: rgba(255,255,255,0.5); font-size: 0.875rem; font-weight: 400; border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+  .nav-item.active { background: rgba(255,255,255,0.12); color: white; font-weight: 500; }
+  .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.7rem; color: rgba(255,255,255,0.3);
+  }
+  .api-status { display: flex; align-items: center; gap: 6px; }
+  .api-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-400); }
+
+  /* ─── MAIN CONTENT ─── */
+  .main { margin-left: var(--sidebar); flex: 1; padding: 2rem 2.5rem; max-width: calc(100vw - var(--sidebar)); }
+
+  .page-header { margin-bottom: 2rem; }
+  .page-title { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 4px; }
+  .page-desc { color: var(--text-muted); font-size: 0.9rem; }
+
+  /* ─── PANELS ─── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ─── FRIDGE PANEL ─── */
+  .two-col { display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; align-items: start; }
+
+  .card {
+    background: var(--white); border-radius: var(--radius-md);
+    border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+  }
+  .card-title { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+
+  .ingredient-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px;
+    border-radius: 20px; border: 1.5px solid var(--border); background: var(--cream);
+    font-size: 0.8rem; cursor: pointer; transition: all 0.15s; user-select: none;
+    color: var(--text-muted);
+  }
+  .chip:hover { border-color: var(--green-400); color: var(--green-600); }
+  .chip.on { border-color: var(--green-400); background: var(--green-50); color: var(--green-600); font-weight: 500; }
+  .chip-check { font-size: 0.65rem; display: none; }
+  .chip.on .chip-check { display: inline; }
+
+  .add-row { display: flex; gap: 8px; }
+  .text-input {
+    flex: 1; padding: 9px 12px; border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 0.875rem; font-family: inherit;
+    background: var(--white); color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  .text-input:focus { border-color: var(--green-400); }
+  .btn-sm {
+    padding: 9px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 0.8rem; font-family: inherit; cursor: pointer; background: var(--white);
+    color: var(--text); transition: all 0.15s; font-weight: 500;
+  }
+  .btn-sm:hover { border-color: var(--green-400); color: var(--green-600); }
+
+  .prefs-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+  .pref-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    cursor: pointer; transition: all 0.15s; background: var(--cream);
+  }
+  .pref-row:hover { border-color: var(--green-400); }
+  .pref-row.on { border-color: var(--green-400); background: var(--green-50); }
+  .pref-name { font-size: 0.875rem; font-weight: 500; }
+  .pref-row.on .pref-name { color: var(--green-600); }
+  .pref-desc { font-size: 0.75rem; color: var(--text-light); margin-top: 1px; }
+  .toggle { width: 36px; height: 20px; border-radius: 10px; background: var(--border-strong); position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: transform 0.2s; box-shadow: var(--shadow-sm); }
+  .pref-row.on .toggle { background: var(--green-400); }
+  .pref-row.on .toggle::after { transform: translateX(16px); }
+
+  .generate-btn {
+    width: 100%; padding: 13px; background: var(--green-600); color: white;
+    border: none; border-radius: var(--radius-sm); font-family: inherit;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .generate-btn:hover:not(:disabled) { background: var(--green-900); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .selected-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--green-50); border: 1px solid var(--green-100);
+    color: var(--green-600); border-radius: 20px; padding: 4px 10px;
+    font-size: 0.75rem; font-weight: 500; margin-bottom: 1rem;
+  }
+
+  /* ─── MEALS PANEL ─── */
+  .meals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .meal-card {
+    background: var(--white); border-radius: var(--radius-md);
+    border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    overflow: hidden; transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .meal-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .meal-card-top { padding: 1.25rem 1.25rem 1rem; }
+  .meal-card-bottom {
+    padding: 0.75rem 1.25rem; background: var(--cream);
+    border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .meal-name { font-family: 'DM Serif Display', serif; font-size: 1.2rem; margin-bottom: 6px; }
+  .meal-desc { font-size: 0.825rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+  .meal-uses { font-size: 0.775rem; color: var(--text-light); }
+  .meal-uses strong { color: var(--text); }
+  .missing { color: #B85C38; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 500;
+  }
+  .pill-time { background: #FFF3E0; color: #E65100; }
+  .pill-diff { background: #E3F2FD; color: #1565C0; }
+  .pill-cal { background: #E8F5E9; color: #2E7D32; }
+
+  /* ─── WEEK PANEL ─── */
+  .week-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 1.5rem;
+  }
+  .day-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 1rem 0.875rem; min-height: 130px;
+  }
+  .day-header { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
+  .day-date { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+  .day-content { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+  .day-content.empty { color: var(--text-light); font-style: italic; }
+  .day-card.today { border-color: var(--green-400); background: var(--green-50); }
+  .day-card.today .day-header { color: var(--green-600); }
+
+  /* ─── HEALTH PANEL ─── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 1.25rem; box-shadow: var(--shadow-sm);
+  }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 4px; }
+  .stat-label { font-size: 0.75rem; color: var(--text-muted); }
+  .stat-unit { font-size: 0.875rem; color: var(--text-light); }
+
+  .waste-section { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-sm); }
+  .waste-row { margin-bottom: 1.25rem; }
+  .waste-row:last-child { margin-bottom: 0; }
+  .waste-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .waste-name { font-size: 0.875rem; font-weight: 500; }
+  .waste-pct { font-size: 0.8rem; color: var(--text-muted); }
+  .bar-bg { height: 8px; border-radius: 4px; background: var(--cream-dark); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--green-400); transition: width 0.8s ease; }
+  .bar-fill.amber { background: #FFA726; }
+  .bar-fill.red { background: #EF5350; }
+
+  /* ─── LOADING / EMPTY ─── */
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-block { text-align: center; padding: 4rem 2rem; }
+  .loading-block .big-spinner { width: 36px; height: 36px; border-width: 3px; border-color: var(--border); border-top-color: var(--green-400); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+  .loading-block p { color: var(--text-muted); font-size: 0.9rem; }
+
+  .empty-block { text-align: center; padding: 4rem 2rem; }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; color: var(--text-light); }
+  .empty-block p { color: var(--text-muted); font-size: 0.9rem; max-width: 300px; margin: 0 auto; line-height: 1.6; }
+
+  /* ─── TOAST ─── */
+  #toast {
+    position: fixed; bottom: 2rem; right: 2rem; background: var(--green-900); color: white;
+    padding: 12px 20px; border-radius: var(--radius-sm); font-size: 0.875rem;
+    box-shadow: var(--shadow-lg); transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 200;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    :root { --sidebar: 60px; }
+    .nav-item span { display: none; }
+    .logo-text { display: none; }
+    .logo-sub { display: none; }
+    .sidebar-footer { display: none; }
+    .two-col { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .week-grid { grid-template-columns: repeat(3, 1fr); }
+    .main { padding: 1.5rem; }
+  }
+  @media (max-width: 600px) {
+    .meals-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .week-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LM STUDIO GATE -->
+<div id="api-gate">
+  <div class="gate-card">
+    <div class="gate-logo">🌿 FridgeAI</div>
+    <p class="gate-subtitle">Powered by your local <strong>LM Studio</strong> server — no cloud, no API key needed.</p>
+    <label class="gate-label" for="api-input">LM Studio server URL</label>
+    <input class="gate-input" type="text" id="api-input" value="http://localhost:1234" />
+    <label class="gate-label" for="model-input" style="margin-top:0.5rem">Model name</label>
+    <input class="gate-input" type="text" id="model-input" value="google/gemma-4-e4b" />
+    <button class="gate-btn" onclick="startApp()">Connect &amp; open the fridge →</button>
+    <p class="gate-note">
+      Make sure LM Studio is running with <strong>Local Server</strong> enabled and
+      <strong>google/gemma-4-e4b</strong> loaded. CORS must be enabled in LM Studio settings
+      (Server → Enable CORS).
+    </p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">🌿 FridgeAI</div>
+      <div class="logo-sub">Meal Planner</div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" onclick="nav('fridge',this)">
+        <span class="nav-icon">🧊</span><span>My Fridge</span>
+      </button>
+      <button class="nav-item" onclick="nav('meals',this)">
+        <span class="nav-icon">🍽️</span><span>Meal Ideas</span>
+      </button>
+      <button class="nav-item" onclick="nav('week',this)">
+        <span class="nav-icon">📅</span><span>Week Plan</span>
+      </button>
+      <button class="nav-item" onclick="nav('health',this)">
+        <span class="nav-icon">💚</span><span>Health</span>
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="api-status">
+        <div class="api-dot"></div>
+        <span id="lm-model-label">LM Studio</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- FRIDGE PANEL -->
+    <div class="panel active" id="panel-fridge">
+      <div class="page-header">
+        <h1 class="page-title">My Fridge</h1>
+        <p class="page-desc">Select what you have and set your preferences, then generate meal ideas.</p>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="card" style="margin-bottom:1.25rem">
+            <div class="card-title">Ingredients</div>
+            <div id="selected-badge" class="selected-badge" style="display:none">
+              <span>✓</span><span id="sel-count">0</span> selected
+            </div>
+            <div class="ingredient-grid" id="chips"></div>
+            <div class="add-row">
+              <input class="text-input" type="text" id="custom-input" placeholder="Add custom ingredient..." />
+              <button class="btn-sm" onclick="addCustom()">+ Add</button>
+            </div>
+          </div>
+          <button class="generate-btn" id="gen-btn" onclick="doGenerateMeals()">
+            ✨ Generate meal ideas
+          </button>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title">Dietary preferences</div>
+            <div class="prefs-list" id="prefs-list"></div>
+            <div class="card-title" style="margin-top:1rem;margin-bottom:0.75rem">Household</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:0.5rem">
+              <span style="font-size:0.875rem;color:var(--text-muted);flex:1">People to feed</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <button class="btn-sm" onclick="changePeople(-1)" style="padding:4px 10px">−</button>
+                <span id="people-count" style="font-weight:600;min-width:16px;text-align:center">2</span>
+                <button class="btn-sm" onclick="changePeople(1)" style="padding:4px 10px">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEALS PANEL -->
+    <div class="panel" id="panel-meals">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h1 class="page-title">Meal Ideas</h1>
+          <p class="page-desc">AI-generated recipes based on your fridge.</p>
+        </div>
+        <button class="btn-sm" onclick="doGenerateMeals()" id="regen-btn" style="margin-top:0.5rem">↺ Regenerate</button>
+      </div>
+      <div id="meals-output">
+        <div class="empty-block">
+          <div class="empty-icon">🍳</div>
+          <p>Head to "My Fridge", select your ingredients, and generate meal ideas.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK PANEL -->
+    <div class="panel" id="panel-week">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h1 class="page-title">Week Plan</h1>
+          <p class="page-desc">Your AI-generated 7-day meal calendar.</p>
+        </div>
+        <button class="generate-btn" onclick="doWeekPlan()" id="week-btn" style="width:auto;padding:10px 18px;font-size:0.8rem">📅 Plan my week</button>
+      </div>
+      <div id="week-output">
+        <div class="week-grid" id="week-grid"></div>
+      </div>
+    </div>
+
+    <!-- HEALTH PANEL -->
+    <div class="panel" id="panel-health">
+      <div class="page-header">
+        <h1 class="page-title">Health & Waste</h1>
+        <p class="page-desc">Nutrition estimates and food waste tracking.</p>
+      </div>
+      <div id="health-output">
+        <div class="empty-block">
+          <div class="empty-icon">💚</div>
+          <p>Generate meal ideas first to see nutrition and waste insights.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let LM_URL = 'http://localhost:1234';
+let LM_MODEL = 'google/gemma-4-e4b';
+let selectedIngredients = new Set();
+let selectedPrefs = new Set();
+let people = 2;
+let meals = [];
+let weekPlan = {};
+
+const DEFAULT_INGREDIENTS = [
+  'Eggs','Milk','Chicken breast','Ground beef','Salmon',
+  'Broccoli','Spinach','Tomatoes','Onion','Garlic','Carrots','Potatoes',
+  'Bell peppers','Zucchini','Mushrooms','Kale',
+  'Pasta','Rice','Bread','Oats','Quinoa',
+  'Cheese','Greek yogurt','Butter','Cream',
+  'Olive oil','Lemon','Canned tomatoes','Chickpeas','Black beans',
+  'Soy sauce','Dijon mustard','Parmesan'
+];
+
+const PREFS = [
+  { id:'vegetarian', name:'Vegetarian', desc:'No meat or fish' },
+  { id:'vegan', name:'Vegan', desc:'No animal products' },
+  { id:'lowcarb', name:'Low-carb', desc:'Under 50g carbs/day' },
+  { id:'highprotein', name:'High-protein', desc:'30g+ protein per meal' },
+  { id:'glutenfree', name:'Gluten-free', desc:'No wheat or gluten' },
+  { id:'quick', name:'Quick meals', desc:'Under 20 minutes' },
+  { id:'budget', name:'Budget-friendly', desc:'Minimal extra shopping' },
+];
+
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+async function startApp() {
+  const url = document.getElementById('api-input').value.trim().replace(/\/+$/, '');
+  const model = document.getElementById('model-input').value.trim();
+  if(!url) { showToast('Enter the LM Studio server URL'); return; }
+  LM_URL = url;
+  LM_MODEL = model;
+  const btn = document.querySelector('.gate-btn');
+  btn.textContent = 'Connecting…';
+  btn.disabled = true;
+  try {
+    const r = await fetch(LM_URL + '/v1/models');
+    if(!r.ok) throw new Error('Server returned ' + r.status);
+    document.getElementById('api-gate').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('lm-model-label').textContent = LM_MODEL;
+    init();
+  } catch(e) {
+    showToast('Cannot reach LM Studio at ' + LM_URL + ' — is it running?');
+    btn.textContent = 'Connect & open the fridge →';
+    btn.disabled = false;
+  }
+}
+
+function init() {
+  // Pre-select some defaults
+  ['Eggs','Chicken breast','Broccoli','Garlic','Rice','Onion','Tomatoes','Spinach'].forEach(i => selectedIngredients.add(i));
+  renderChips();
+  renderPrefs();
+  renderWeekGrid({});
+  document.getElementById('custom-input').addEventListener('keydown', e => { if(e.key==='Enter') addCustom(); });
+}
+
+function renderChips() {
+  const el = document.getElementById('chips');
+  const all = [...DEFAULT_INGREDIENTS, ...([...document.querySelectorAll('.chip')].map(c=>c.dataset.name).filter(n=>!DEFAULT_INGREDIENTS.includes(n)))];
+  el.innerHTML = [...new Set([...DEFAULT_INGREDIENTS, ...[...selectedIngredients].filter(i=>!DEFAULT_INGREDIENTS.includes(i))])].map(ing => `
+    <div class="chip ${selectedIngredients.has(ing)?'on':''}" data-name="${ing}" onclick="toggleChip(this,'${ing}')">
+      <span class="chip-check">✓</span>${ing}
+    </div>
+  `).join('');
+  const cnt = selectedIngredients.size;
+  const badge = document.getElementById('selected-badge');
+  badge.style.display = cnt > 0 ? 'inline-flex' : 'none';
+  document.getElementById('sel-count').textContent = cnt;
+}
+
+function toggleChip(el, name) {
+  if(selectedIngredients.has(name)) selectedIngredients.delete(name);
+  else selectedIngredients.add(name);
+  renderChips();
+}
+
+function addCustom() {
+  const inp = document.getElementById('custom-input');
+  const val = inp.value.trim();
+  if(!val) return;
+  selectedIngredients.add(val);
+  inp.value = '';
+  renderChips();
+}
+
+function renderPrefs() {
+  document.getElementById('prefs-list').innerHTML = PREFS.map(p => `
+    <div class="pref-row ${selectedPrefs.has(p.id)?'on':''}" onclick="togglePref('${p.id}',this)">
+      <div>
+        <div class="pref-name">${p.name}</div>
+        <div class="pref-desc">${p.desc}</div>
+      </div>
+      <div class="toggle"></div>
+    </div>
+  `).join('');
+}
+
+function togglePref(id, el) {
+  if(selectedPrefs.has(id)) selectedPrefs.delete(id);
+  else selectedPrefs.add(id);
+  renderPrefs();
+}
+
+function changePeople(delta) {
+  people = Math.max(1, Math.min(10, people + delta));
+  document.getElementById('people-count').textContent = people;
+}
+
+function nav(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function callClaude(prompt) {
+  const resp = await fetch(LM_URL + '/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: LM_MODEL,
+      max_tokens: 1500,
+      temperature: 0.7,
+      messages: [
+        { role: 'system', content: 'You are a helpful meal planning assistant. Always respond with valid JSON only — no markdown, no backticks, no explanation.' },
+        { role: 'user', content: prompt }
+      ]
+    })
+  });
+  if(!resp.ok) {
+    const err = await resp.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'LM Studio error ' + resp.status);
+  }
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+async function doGenerateMeals() {
+  const ings = [...selectedIngredients];
+  if(ings.length < 2) { showToast('Select at least 2 ingredients first!'); return; }
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generating...';
+
+  // Switch to meals tab
+  nav('meals', document.querySelectorAll('.nav-item')[1]);
+
+  document.getElementById('meals-output').innerHTML = `
+    <div class="loading-block">
+      <div class="big-spinner"></div>
+      <p>Gemma is cooking up meal ideas…</p>
+    </div>`;
+
+  const prefs = [...selectedPrefs].join(', ') || 'none';
+  const prompt = `You are a professional chef and nutritionist. I have these ingredients: ${ings.join(', ')}.
+Dietary preferences: ${prefs}. Cooking for ${people} people.
+
+Generate exactly 5 creative, delicious meal ideas. Return ONLY valid JSON (no markdown, no backticks):
+{"meals":[
+  {
+    "name": "Meal name",
+    "description": "One appetizing sentence about this dish, max 20 words.",
+    "instructions": "3-4 concise cooking steps.",
+    "time_minutes": 25,
+    "difficulty": "Easy",
+    "calories_per_serving": 480,
+    "protein_g": 32,
+    "carbs_g": 40,
+    "fat_g": 18,
+    "uses": ["ingredient1","ingredient2","ingredient3"],
+    "missing": ["optional_ingredient"]
+  }
+]}
+difficulty must be Easy, Medium, or Hard. missing should have 0-2 items max.`;
+
+  try {
+    const raw = await callClaude(prompt);
+    const json = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(json);
+    meals = parsed.meals;
+    renderMeals(meals);
+    updateHealth();
+    showToast(`${meals.length} meal ideas generated!`);
+  } catch(e) {
+    document.getElementById('meals-output').innerHTML = `
+      <div class="empty-block">
+        <div class="empty-icon">⚠️</div>
+        <p>Error: ${e.message}. Please check your API key and try again.</p>
+      </div>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ Regenerate meal ideas';
+}
+
+function renderMeals(mealList) {
+  if(!mealList || !mealList.length) return;
+  document.getElementById('meals-output').innerHTML = `
+    <div class="meals-grid">
+      ${mealList.map(m => `
+        <div class="meal-card">
+          <div class="meal-card-top">
+            <div class="meal-name">${m.name}</div>
+            <div class="meal-desc">${m.description}</div>
+            <div class="meal-uses">
+              <strong>Uses:</strong> ${m.uses.join(', ')}
+              ${m.missing && m.missing.length ? `<span class="missing"> · Need: ${m.missing.join(', ')}</span>` : ''}
+            </div>
+            ${m.instructions ? `<details style="margin-top:10px"><summary style="font-size:0.78rem;color:var(--green-600);cursor:pointer;font-weight:500">View instructions</summary><p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;line-height:1.6">${m.instructions}</p></details>` : ''}
+          </div>
+          <div class="meal-card-bottom">
+            <span class="pill pill-time">⏱ ${m.time_minutes} min</span>
+            <span class="pill pill-diff">${m.difficulty}</span>
+            <span class="pill pill-cal">🔥 ${m.calories_per_serving} kcal</span>
+            <span class="pill pill-cal">💪 ${m.protein_g}g protein</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function renderWeekGrid(plan) {
+  const today = new Date().getDay(); // 0=Sun
+  const todayIdx = today === 0 ? 6 : today - 1; // Mon=0
+  const now = new Date();
+
+  document.getElementById('week-grid').innerHTML = DAYS.map((day, i) => {
+    const date = new Date(now);
+    date.setDate(now.getDate() - todayIdx + i);
+    const dd = date.getDate();
+    const isToday = i === todayIdx;
+    const meal = plan[day] || '';
+    return `
+      <div class="day-card ${isToday?'today':''}">
+        <div class="day-header">${day.slice(0,3)}</div>
+        <div class="day-date">${dd}</div>
+        <div class="day-content ${meal?'':'empty'}">${meal || '—'}</div>
+      </div>`;
+  }).join('');
+}
+
+async function doWeekPlan() {
+  const btn = document.getElementById('week-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-top-color:white"></div> Planning…';
+
+  const mealNames = meals.length ? meals.map(m=>m.name) : [];
+  const ings = [...selectedIngredients];
+  const prefs = [...selectedPrefs].join(', ') || 'none';
+
+  const prompt = `Create a 7-day dinner meal plan. 
+Available meals already generated: ${mealNames.join(', ')}.
+Available ingredients: ${ings.join(', ')}.
+Dietary preferences: ${prefs}.
+Use a mix of the generated meals and suggest other simple meals for the rest.
+Return ONLY valid JSON:
+{"Monday":"meal name","Tuesday":"meal name","Wednesday":"meal name","Thursday":"meal name","Friday":"meal name","Saturday":"meal name","Sunday":"meal name"}
+Each meal name should be 3-5 words max.`;
+
+  try {
+    const raw = await callClaude(prompt);
+    const json = raw.replace(/```json|```/g,'').trim();
+    weekPlan = JSON.parse(json);
+    renderWeekGrid(weekPlan);
+    showToast('Week plan ready!');
+  } catch(e) {
+    const fallback = {};
+    DAYS.forEach((d,i) => { fallback[d] = meals[i%meals.length]?.name || 'Simple meal'; });
+    weekPlan = fallback;
+    renderWeekGrid(weekPlan);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '↺ Regenerate week';
+}
+
+function updateHealth() {
+  if(!meals.length) return;
+
+  const avg = f => Math.round(meals.reduce((s,m)=>s+(m[f]||0),0)/meals.length);
+  const avgCal = avg('calories_per_serving');
+  const avgPro = avg('protein_g');
+  const avgCarb = avg('carbs_g');
+  const avgFat = avg('fat_g');
+
+  const usedSet = new Set(meals.flatMap(m=>m.uses||[]));
+  const total = selectedIngredients.size;
+  const used = [...selectedIngredients].filter(i=>usedSet.has(i)).length;
+  const pct = total ? Math.round(used/total*100) : 0;
+  const wastePct = 100 - pct;
+
+  document.getElementById('health-output').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" style="color:#1565C0">${avgCal}</div>
+        <div class="stat-label">Avg calories <span class="stat-unit">per serving</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:#2E7D32">${avgPro}g</div>
+        <div class="stat-label">Avg protein <span class="stat-unit">per serving</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:#E65100">${avgCarb}g</div>
+        <div class="stat-label">Avg carbs <span class="stat-unit">per serving</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:#6A1B9A">${avgFat}g</div>
+        <div class="stat-label">Avg fat <span class="stat-unit">per serving</span></div>
+      </div>
+    </div>
+    <div class="waste-section">
+      <div class="card-title" style="margin-bottom:1.25rem">Food waste analysis</div>
+      <div class="waste-row">
+        <div class="waste-meta">
+          <span class="waste-name">Ingredients used in meal plans</span>
+          <span class="waste-pct">${used} / ${total} (${pct}%)</span>
+        </div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="waste-row">
+        <div class="waste-meta">
+          <span class="waste-name">Potential food waste</span>
+          <span class="waste-pct">${wastePct}%</span>
+        </div>
+        <div class="bar-bg"><div class="bar-fill ${wastePct>50?'red':wastePct>25?'amber':''}" style="width:${wastePct}%"></div></div>
+      </div>
+      <div class="waste-row">
+        <div class="waste-meta">
+          <span class="waste-name">Meals with zero missing ingredients</span>
+          <span class="waste-pct">${meals.filter(m=>!m.missing||!m.missing.length).length} / ${meals.length}</span>
+        </div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(meals.filter(m=>!m.missing||!m.missing.length).length/meals.length*100)}%"></div></div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-light);margin-top:1rem;line-height:1.6">
+        💡 Tip: ${wastePct > 40 ? 'Try adding more ingredients to your fridge list — several are going unused.' : 'Great job! Most of your fridge ingredients are being used across your meal plan.'}
+      </p>
+    </div>`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Allow Enter key on API gate
+document.querySelectorAll('#api-input, #model-input').forEach(el => el.addEventListener('keydown', e => { if(e.key==='Enter') startApp(); }));
+</script>
+</body>
+</html>

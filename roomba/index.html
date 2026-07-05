@@ -1,0 +1,2005 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pet Enrichment Roomba</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #16212b;
+      --muted: #61707d;
+      --subtle: #8a98a3;
+      --line: #d8e0e5;
+      --paper: #f4f0e8;
+      --panel: #fffdf8;
+      --panel-2: #f8fbfc;
+      --dark: #20303d;
+      --blue: #286ea6;
+      --teal: #16806f;
+      --red: #b34a42;
+      --amber: #bd7a1d;
+      --violet: #744489;
+      --green: #467c4c;
+      --shadow: 0 18px 48px rgba(22, 33, 43, 0.13);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #eef4f7;
+      --muted: #b5c1c9;
+      --subtle: #8999a4;
+      --line: #31414d;
+      --paper: #101820;
+      --panel: #17222b;
+      --panel-2: #1e2b35;
+      --dark: #d9e7ee;
+      --blue: #63a8df;
+      --teal: #55c3ad;
+      --red: #e06f66;
+      --amber: #e3a64b;
+      --violet: #bd8cce;
+      --green: #80b982;
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(244, 240, 232, 0.96)),
+        var(--paper);
+      color: var(--ink);
+    }
+
+    body[data-theme="dark"] {
+      background:
+        linear-gradient(180deg, rgba(18, 27, 35, 0.96), rgba(12, 18, 24, 0.98)),
+        var(--paper);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    select {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      color: var(--ink);
+    }
+
+    button {
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    button:hover,
+    select:hover {
+      border-color: #9fb0bd;
+      background: var(--panel-2);
+    }
+
+    button.primary {
+      border-color: #1c5e8f;
+      background: var(--blue);
+      color: #ffffff;
+    }
+
+    button.danger {
+      border-color: #9e3d36;
+      background: #fff7f6;
+      color: #8d332d;
+    }
+
+    body[data-theme="dark"] button.danger {
+      border-color: #a94b45;
+      background: #331e20;
+      color: #ffb1aa;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(216, 224, 229, 0.9);
+      background: rgba(255, 253, 248, 0.94);
+      backdrop-filter: blur(14px);
+    }
+
+    body[data-theme="dark"] header {
+      border-bottom-color: rgba(49, 65, 77, 0.92);
+      background: rgba(18, 27, 35, 0.94);
+    }
+
+    .bar {
+      width: min(1520px, 100%);
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: minmax(250px, 1fr) auto auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 4px;
+      font-size: 23px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin-bottom: 7px;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .tab {
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-radius: 0;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .tab:last-child {
+      border-right: 0;
+    }
+
+    .tab.active {
+      background: var(--dark);
+      color: #ffffff;
+    }
+
+    body[data-theme="dark"] .tab.active {
+      color: #16212b;
+    }
+
+    .theme-toggle {
+      min-width: 116px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    main {
+      width: min(1520px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .hero-band {
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .overview,
+    .panel,
+    .stage-wrap,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .overview {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      align-content: center;
+    }
+
+    .overview p {
+      max-width: 860px;
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .badge-row,
+    .actions,
+    .switch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border: 1px solid #cfe2dd;
+      border-radius: 999px;
+      background: #eef6f3;
+      color: #126c5d;
+      font-size: 12px;
+    }
+
+    body[data-theme="dark"] .badge {
+      border-color: #315d56;
+      background: #1d342f;
+      color: #8fe0cf;
+    }
+
+    .sim-grid {
+      display: grid;
+      grid-template-columns: minmax(600px, 1fr) 390px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stage-wrap {
+      overflow: hidden;
+    }
+
+    .stage-top {
+      min-height: 72px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.62);
+    }
+
+    body[data-theme="dark"] .stage-top {
+      background: rgba(23, 34, 43, 0.72);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: var(--blue);
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 5px rgba(40, 110, 166, 0.13);
+    }
+
+    .status strong,
+    .status span {
+      display: block;
+    }
+
+    .status strong {
+      font-size: 15px;
+    }
+
+    .status span {
+      color: var(--muted);
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background: #e8dece;
+    }
+
+    .panel {
+      padding: 14px;
+    }
+
+    .panel + .panel {
+      margin-top: 14px;
+    }
+
+    .control {
+      margin: 13px 0;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .select-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .metric {
+      min-height: 70px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      background: var(--panel-2);
+    }
+
+    .metric b {
+      display: block;
+      font-size: 21px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .risk-low b {
+      color: var(--teal);
+    }
+
+    .risk-med b {
+      color: var(--amber);
+    }
+
+    .risk-high b {
+      color: var(--red);
+    }
+
+    .log {
+      height: 185px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+      padding: 9px;
+      color: #334552;
+      font-size: 12px;
+    }
+
+    body[data-theme="dark"] .log {
+      color: #d5e1e7;
+    }
+
+    .log p {
+      margin: 0 0 8px;
+      line-height: 1.38;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 78px 1fr;
+      gap: 8px;
+      border-left: 3px solid var(--line);
+      padding-left: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .timeline-item b {
+      color: var(--ink);
+    }
+
+    .flow-layout,
+    .prototype-layout {
+      display: grid;
+      grid-template-columns: minmax(680px, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .flow {
+      min-height: 720px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(#edf1f3 1px, transparent 1px),
+        linear-gradient(90deg, #edf1f3 1px, transparent 1px),
+        var(--panel);
+      background-size: 28px 28px;
+      box-shadow: var(--shadow);
+    }
+
+    body[data-theme="dark"] .flow {
+      background:
+        linear-gradient(#22313b 1px, transparent 1px),
+        linear-gradient(90deg, #22313b 1px, transparent 1px),
+        var(--panel);
+    }
+
+    .node {
+      position: absolute;
+      width: 178px;
+      min-height: 82px;
+      border: 2px solid #344858;
+      border-radius: 8px;
+      background: var(--panel-2);
+      padding: 10px;
+      z-index: 2;
+    }
+
+    .node strong,
+    .node span {
+      display: block;
+    }
+
+    .node strong {
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .node span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .node.active {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 4px rgba(22, 128, 111, 0.16);
+    }
+
+    .arrow {
+      position: absolute;
+      height: 2px;
+      background: #8a9ba6;
+      transform-origin: left center;
+      z-index: 1;
+    }
+
+    .arrow::after {
+      content: "";
+      position: absolute;
+      right: -1px;
+      top: -5px;
+      border-left: 10px solid #8a9ba6;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      overflow: hidden;
+    }
+
+    .card-art {
+      height: 174px;
+      border-bottom: 1px solid var(--line);
+      background: #dce8e5;
+    }
+
+    .card-art svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .card-body {
+      padding: 13px;
+    }
+
+    .card-body p,
+    .panel p,
+    .card-body li,
+    .panel li {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .card-body p {
+      margin-bottom: 0;
+    }
+
+    .ethics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .prompt {
+      margin-top: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .report-box {
+      min-height: 280px;
+      width: 100%;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: var(--panel-2);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .ai-feedback {
+      min-height: 210px;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: var(--panel-2);
+      color: var(--ink);
+      white-space: pre-wrap;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .model-line {
+      margin: 10px 0 0;
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .prompt-box {
+      min-height: 88px;
+      width: 100%;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      background: var(--panel-2);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    .blueprint {
+      min-height: 530px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .blueprint svg {
+      width: 100%;
+      height: 100%;
+      min-height: 530px;
+      display: block;
+    }
+
+    .checklist {
+      padding-left: 18px;
+      margin: 0;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--subtle);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 1180px) {
+      .hero-band,
+      .sim-grid,
+      .flow-layout,
+      .prototype-layout,
+      .ethics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .bar {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .tab {
+        padding: 0 6px;
+        font-size: 12px;
+      }
+
+      main {
+        padding: 10px;
+      }
+
+      .stage-top {
+        grid-template-columns: 1fr;
+      }
+
+      .actions button,
+      .actions select {
+        flex: 1 1 128px;
+      }
+
+      .select-row,
+      .metric-grid,
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .flow {
+        min-height: 920px;
+      }
+
+      .node {
+        position: relative;
+        left: auto !important;
+        top: auto !important;
+        width: auto;
+        margin: 14px;
+      }
+
+      .arrow {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="bar">
+        <div>
+          <h1>Pet Enrichment Roomba</h1>
+          <p class="subtitle">A final-ready classroom app for simulating autonomous pet enrichment, safety tradeoffs, storyboards, and ethics.</p>
+        </div>
+        <nav class="tabs" aria-label="Views">
+          <button class="tab active" data-view="sim">Simulator</button>
+          <button class="tab" data-view="flow">Flowchart</button>
+          <button class="tab" data-view="story">Storyboard</button>
+          <button class="tab" data-view="ethics">Ethics</button>
+          <button class="tab" data-view="prototype">Prototype</button>
+          <button class="tab" data-view="report">Report</button>
+        </nav>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">Dark mode</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="sim" class="view active">
+        <div class="hero-band">
+          <div class="overview">
+            <div>
+              <h2>Autonomous Play System</h2>
+              <p>The robot observes pet activity, comfort, proximity, sensor confidence, and owner-defined limits. It chooses between scanning, inviting play, active enrichment, retreating, resting, docking, or escalating to the owner.</p>
+            </div>
+            <div class="badge-row">
+              <span class="badge">body-language aware</span>
+              <span class="badge">owner override</span>
+              <span class="badge">privacy mode</span>
+              <span class="badge">risk scoring</span>
+              <span class="badge">session report</span>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Session Summary</h2>
+            <div class="metric-grid">
+              <div class="metric"><b id="runTime">0:00</b><span>elapsed time</span></div>
+              <div class="metric"><b id="batteryVal">100%</b><span>robot battery</span></div>
+              <div class="metric"><b id="playScore">0</b><span>enrichment score</span></div>
+              <div class="metric" id="riskMetric"><b id="riskScore">Low</b><span>risk level</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-grid">
+          <div class="stage-wrap">
+            <div class="stage-top">
+              <div class="status">
+                <span class="dot" id="stateDot"></span>
+                <div>
+                  <strong id="stateName">Scanning</strong>
+                  <span id="stateReason">Robot is reading pet activity and room context.</span>
+                </div>
+              </div>
+              <div class="actions">
+                <select id="scenarioSelect" aria-label="Scenario preset">
+                  <option value="balanced">Balanced day</option>
+                  <option value="sleepy">Sleepy pet</option>
+                  <option value="zoomies">High-energy pet</option>
+                  <option value="nervous">Nervous pet</option>
+                  <option value="privacy">Privacy-first home</option>
+                </select>
+                <button id="pauseBtn">Pause</button>
+                <button id="sleepBtn">Nap</button>
+                <button id="wakeBtn">Wake</button>
+                <button id="zoomBtn">Zoomies</button>
+                <button class="danger" id="overrideBtn">Owner override</button>
+                <button class="primary" id="resetBtn">Reset</button>
+              </div>
+            </div>
+            <canvas id="world" width="1280" height="800" aria-label="2D simulation of a robot and pet in a home"></canvas>
+          </div>
+
+          <aside>
+            <div class="panel">
+              <h2>Behaviour Tuning</h2>
+              <div class="select-row">
+                <label class="stack" for="petType">Pet type
+                  <select id="petType">
+                    <option value="cat">Cat</option>
+                    <option value="dog">Dog</option>
+                    <option value="rabbit">Rabbit</option>
+                  </select>
+                </label>
+                <label class="stack" for="gameMode">Game mode
+                  <select id="gameMode">
+                    <option value="feather">Feather lure</option>
+                    <option value="treat">Treat trail</option>
+                    <option value="follow">Follow-me</option>
+                    <option value="puzzle">Puzzle pause</option>
+                  </select>
+                </label>
+              </div>
+              <div class="control">
+                <label for="energy">Pet activity <span id="energyVal">42</span></label>
+                <input id="energy" type="range" min="0" max="100" value="42">
+              </div>
+              <div class="control">
+                <label for="comfort">Pet comfort <span id="comfortVal">78</span></label>
+                <input id="comfort" type="range" min="0" max="100" value="78">
+              </div>
+              <div class="control">
+                <label for="confidence">Sensor confidence <span id="confidenceVal">82</span></label>
+                <input id="confidence" type="range" min="0" max="100" value="82">
+              </div>
+              <div class="control">
+                <label for="autonomy">Robot autonomy <span id="autonomyVal">58</span></label>
+                <input id="autonomy" type="range" min="0" max="100" value="58">
+              </div>
+              <div class="control">
+                <label for="maxSpeed">Max robot speed <span id="speedVal">55</span></label>
+                <input id="maxSpeed" type="range" min="15" max="100" value="55">
+              </div>
+              <div class="switch-row">
+                <label><input id="learningToggle" type="checkbox" checked> adaptive learning</label>
+                <label><input id="privacyToggle" type="checkbox"> privacy mode</label>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h2>Safety Dashboard</h2>
+              <div class="metric-grid">
+                <div class="metric"><b id="stressScore">0</b><span>stress warnings</span></div>
+                <div class="metric"><b id="nearMisses">0</b><span>near misses</span></div>
+                <div class="metric"><b id="confidenceMetric">82%</b><span>sensor confidence</span></div>
+                <div class="metric"><b id="dataMetric">Local</b><span>data mode</span></div>
+              </div>
+              <div class="footer-note" id="guardrailText">Guardrail: play stops when comfort drops, distance is too close, battery is low, or sensor confidence is weak.</div>
+            </div>
+
+            <div class="panel">
+              <h2>Event Log</h2>
+              <div class="log" id="eventLog" aria-live="polite"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="flow" class="view">
+        <div class="flow-layout">
+          <div class="flow" id="flowCanvas" aria-label="Robot behaviour state flowchart">
+            <div class="node" data-state="Scanning" style="left: 42px; top: 42px;"><strong>Scanning</strong><span>Estimate pet posture, motion, distance, room obstacles, and confidence.</span></div>
+            <div class="node" data-state="Dormant" style="left: 332px; top: 42px;"><strong>Dormant</strong><span>Pet is asleep, inactive, or in a rest zone. Robot stays quiet.</span></div>
+            <div class="node" data-state="Invite" style="left: 622px; top: 42px;"><strong>Invite</strong><span>Offer a slow, optional toy cue and wait for consent signals.</span></div>
+            <div class="node" data-state="Play" style="left: 622px; top: 254px;"><strong>Play</strong><span>Run short adaptive games with distance and intensity limits.</span></div>
+            <div class="node" data-state="Treat" style="left: 622px; top: 466px;"><strong>Treat</strong><span>Drop reward or pause puzzle only when owner policy allows it.</span></div>
+            <div class="node" data-state="Retreat" style="left: 332px; top: 466px;"><strong>Retreat</strong><span>Pet freezes, backs away, or comfort drops. Robot creates space.</span></div>
+            <div class="node" data-state="Escalate" style="left: 42px; top: 466px;"><strong>Escalate</strong><span>Confidence is low or risk is high. Owner review is requested.</span></div>
+            <div class="node" data-state="Docking" style="left: 42px; top: 254px;"><strong>Docking</strong><span>Battery is low, session is complete, or owner override is active.</span></div>
+          </div>
+
+          <aside class="panel">
+            <h2>Decision Rules</h2>
+            <div class="timeline">
+              <div class="timeline-item"><b>Input</b><span>motion, distance, rest-zone status, comfort score, confidence, battery, owner policy</span></div>
+              <div class="timeline-item"><b>Consent</b><span>play requires approach, following, or repeated attention; no chasing frozen or retreating pets</span></div>
+              <div class="timeline-item"><b>Limits</b><span>short sessions, speed cap, minimum distance, rest pauses, manual override</span></div>
+              <div class="timeline-item"><b>Privacy</b><span>home map stays local; privacy mode lowers data detail and disables learning</span></div>
+              <div class="timeline-item"><b>Escalate</b><span>unclear signals, high autonomy with low confidence, or repeated stress warnings</span></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="story" class="view">
+        <div class="card-grid">
+          <article class="card">
+            <div class="card-art" data-art="1"></div>
+            <div class="card-body"><h2>1. Quiet Check-In</h2><p>The robot wakes, checks the room map, reads pet posture, and stays dormant if the pet is sleeping.</p></div>
+          </article>
+          <article class="card">
+            <div class="card-art" data-art="2"></div>
+            <div class="card-body"><h2>2. Optional Invite</h2><p>When the pet is alert and comfortable, the robot enters view slowly and offers a game without blocking escape routes.</p></div>
+          </article>
+          <article class="card">
+            <div class="card-art" data-art="3"></div>
+            <div class="card-body"><h2>3. Adaptive Play</h2><p>The robot varies motion, pauses, and distance based on engagement. It rewards curiosity, not forced interaction.</p></div>
+          </article>
+          <article class="card">
+            <div class="card-art" data-art="4"></div>
+            <div class="card-body"><h2>4. Safety Retreat</h2><p>If the pet freezes, avoids, or comfort drops, the robot backs away and records a stress warning.</p></div>
+          </article>
+          <article class="card">
+            <div class="card-art" data-art="5"></div>
+            <div class="card-body"><h2>5. Owner Escalation</h2><p>Unclear body language, low sensor confidence, or high autonomy triggers a review notification.</p></div>
+          </article>
+          <article class="card">
+            <div class="card-art" data-art="6"></div>
+            <div class="card-body"><h2>6. Session Report</h2><p>The robot docks and summarizes enrichment, stress signals, privacy choices, and design tradeoffs.</p></div>
+          </article>
+          <article class="card">
+            <div class="card-art" data-art="7"></div>
+            <div class="card-body"><h2>7. Human Bonding</h2><p>The owner receives suggestions for direct play so the robot complements, rather than replaces, relationship time.</p></div>
+          </article>
+          <article class="card">
+            <div class="card-art" data-art="8"></div>
+            <div class="card-body"><h2>8. Design Reflection</h2><p>Students compare what the robot optimizes with what animal experts, owners, and pets might value.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="ethics" class="view">
+        <div class="ethics-grid">
+          <article class="panel"><h2>Reliability and Autonomy</h2><p>Behaviour classifiers can mistake fear for calm or excitement for consent. A robust design needs uncertainty thresholds, rest defaults, speed caps, and owner escalation.</p><div class="prompt"><b>Discussion:</b> When should the robot stop deciding and ask a human?</div><span class="badge">policy drift</span> <span class="badge">body language</span></article>
+          <article class="panel"><h2>Animal Expertise</h2><p>Design choices made only by AI engineers can miss species-specific enrichment needs. Animal behaviour experts should shape state rules and reward functions.</p><div class="prompt"><b>Discussion:</b> Who should define a good play session?</div><span class="badge">expert values</span> <span class="badge">welfare</span></article>
+          <article class="panel"><h2>Owner Relationship</h2><p>The robot can reduce loneliness while owners are away, but it may also make care feel outsourced. The app includes a bonding prompt in the final report.</p><div class="prompt"><b>Discussion:</b> What should remain a human responsibility?</div><span class="badge">attachment</span> <span class="badge">care work</span></article>
+          <article class="panel"><h2>Malicious Use</h2><p>A mobile robot can learn home layouts and daily routines. Strong access control and local-only map storage reduce stalking, theft, and tampering risks.</p><div class="prompt"><b>Discussion:</b> Which data should never leave the home?</div><span class="badge">home maps</span> <span class="badge">remote access</span></article>
+          <article class="panel"><h2>Corporate Incentives</h2><p>Pet behaviour data can reveal illness, travel, household stress, or family changes. That makes welfare analytics useful but commercially tempting.</p><div class="prompt"><b>Discussion:</b> Should pet health predictions be monetized?</div><span class="badge">surveillance</span> <span class="badge">advertising</span></article>
+          <article class="panel"><h2>Economic Impacts</h2><p>Pet sitters and daycare workers do specialized emotional labour. Automation may not affect many jobs, but it can still displace meaningful work.</p><div class="prompt"><b>Discussion:</b> What human services should the robot support instead of replacing?</div><span class="badge">animal care labor</span></article>
+          <article class="panel"><h2>Government and Welfare</h2><p>Aggregated signals could expose widespread pet loneliness or health issues. Policy benefits depend on consent, anonymization, and responsible interpretation.</p><div class="prompt"><b>Discussion:</b> When is aggregate pet data a public good?</div><span class="badge">policy</span> <span class="badge">data governance</span></article>
+          <article class="panel"><h2>Possible AI Futures</h2><p>If AI companions become compelling caretakers, students can ask whether pets are companions, dependents, design users, or beings whose agency should constrain automation.</p><div class="prompt"><b>Discussion:</b> Could a machine become a pet, or only imitate one?</div><span class="badge">synthetic companions</span></article>
+          <article class="panel"><h2>Classroom Debate</h2><p>Teams can argue for owner convenience, animal welfare, privacy-first design, labour protection, or banning autonomous play without supervision.</p><div class="prompt"><b>Discussion:</b> Which stakeholder gets veto power?</div><span class="badge">stakeholders</span> <span class="badge">tradeoffs</span></article>
+        </div>
+      </section>
+
+      <section id="prototype" class="view">
+        <div class="prototype-layout">
+          <div class="blueprint">
+            <svg viewBox="0 0 900 560" role="img" aria-label="Paper and cardboard prototype blueprint">
+              <rect width="900" height="560" fill="#f8fbfc"/>
+              <rect x="42" y="42" width="816" height="476" rx="18" fill="#fffdf8" stroke="#d8e0e5" stroke-width="3"/>
+              <circle cx="330" cy="275" r="126" fill="#286ea6" opacity="0.95"/>
+              <circle cx="330" cy="275" r="88" fill="#ffffff" opacity="0.16"/>
+              <circle cx="372" cy="238" r="13" fill="#ffffff"/>
+              <circle cx="372" cy="312" r="13" fill="#ffffff"/>
+              <rect x="410" y="259" width="112" height="32" rx="16" fill="#20303d"/>
+              <path d="M250 286 C160 208, 140 355, 80 300" fill="none" stroke="#d63c6b" stroke-width="10" stroke-linecap="round"/>
+              <circle cx="72" cy="296" r="22" fill="#d63c6b"/>
+              <rect x="570" y="116" width="206" height="94" rx="12" fill="#e6f1ee" stroke="#9fc9bf" stroke-width="3"/>
+              <text x="592" y="150" font-size="24" font-weight="700" fill="#16212b">Sensor ring</text>
+              <text x="592" y="181" font-size="17" fill="#61707d">paper tabs for camera, lidar, mic</text>
+              <rect x="570" y="246" width="206" height="94" rx="12" fill="#f7ead5" stroke="#deb777" stroke-width="3"/>
+              <text x="592" y="280" font-size="24" font-weight="700" fill="#16212b">Toy module</text>
+              <text x="592" y="311" font-size="17" fill="#61707d">string lure or treat chute</text>
+              <rect x="570" y="376" width="206" height="94" rx="12" fill="#f6e2df" stroke="#dfa29b" stroke-width="3"/>
+              <text x="592" y="410" font-size="24" font-weight="700" fill="#16212b">Safety shell</text>
+              <text x="592" y="441" font-size="17" fill="#61707d">soft bumper and stop button</text>
+              <line x1="456" y1="240" x2="570" y2="163" stroke="#8a9ba6" stroke-width="3"/>
+              <line x1="522" y1="275" x2="570" y2="293" stroke="#8a9ba6" stroke-width="3"/>
+              <line x1="455" y1="318" x2="570" y2="423" stroke="#8a9ba6" stroke-width="3"/>
+            </svg>
+          </div>
+          <aside class="panel">
+            <h2>Physical Prototype Guide</h2>
+            <ol class="checklist">
+              <li>Cut a circular cardboard body and mark a clear front direction.</li>
+              <li>Add a paper sensor ring with labels for camera, distance, sound, and bumper sensors.</li>
+              <li>Attach a removable toy module: string lure, treat chute, or puzzle flap.</li>
+              <li>Add a visible stop button and soft bumper to represent safety constraints.</li>
+              <li>Use sticky notes for robot states and move them as the storyboard changes.</li>
+              <li>Present one failure case and one design fix during final critique.</li>
+            </ol>
+            <p class="footer-note">Prototype goal: make the invisible AI decisions visible enough for students to critique them.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="report" class="view">
+        <div class="hero-band">
+          <div class="panel">
+            <h2>Local AI Lab</h2>
+            <textarea id="reportBox" class="report-box" aria-label="Generated project report"></textarea>
+            <div class="actions" style="margin-top:10px;">
+              <button class="primary" id="generateReportBtn">Generate report</button>
+              <button id="aiCritiqueBtn" data-ai-mode="critique">Live critique</button>
+              <button id="aiDilemmaBtn" data-ai-mode="dilemma">New dilemma</button>
+              <button id="aiCouncilBtn" data-ai-mode="council">Stakeholder council</button>
+              <button id="aiPolicyBtn" data-ai-mode="policy">Robot policy</button>
+              <button id="aiFailureBtn" data-ai-mode="failure">Failure mode</button>
+              <button id="copyReportBtn">Copy report</button>
+            </div>
+            <label class="stack" for="customPrompt" style="margin-top:12px;">Custom local model request
+              <textarea id="customPrompt" class="prompt-box" placeholder="Example: Make a scenario where the robot optimizes owner convenience but accidentally makes the pet less confident."></textarea>
+            </label>
+            <div class="actions" style="margin-top:10px;">
+              <button id="aiCustomBtn" data-ai-mode="custom">Run custom prompt</button>
+              <button id="applyPatchBtn">Apply suggested settings</button>
+            </div>
+            <p class="model-line">Local model: google/gemma-4-e4b via LM Studio at 127.0.0.1:1234</p>
+            <div id="aiFeedback" class="ai-feedback">Use the local model to generate dilemmas, roleplay stakeholders, rewrite behaviour policy, or invent failure cases from the live simulator state.</div>
+          </div>
+          <aside class="panel">
+            <h2>Rubric Checklist</h2>
+            <ol class="checklist">
+              <li>Storyboard explains the interaction from pet detection to session report.</li>
+              <li>Flowchart includes normal, failure, and owner-escalation states.</li>
+              <li>2D simulation demonstrates adaptive robot behaviour.</li>
+              <li>Ethics section covers reliability, relationships, misuse, labour, corporations, government, and futures.</li>
+              <li>Prototype concept makes safety and autonomy choices visible.</li>
+              <li>Final claim names a design value, a risk, and a mitigation.</li>
+            </ol>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const storedTheme = localStorage.getItem("petRoombaTheme");
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.body.dataset.theme = storedTheme || (prefersDark ? "dark" : "light");
+
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+
+    const canvas = $("#world");
+    const ctx = canvas.getContext("2d");
+    const ui = {
+      stateName: $("#stateName"),
+      stateReason: $("#stateReason"),
+      stateDot: $("#stateDot"),
+      eventLog: $("#eventLog"),
+      runTime: $("#runTime"),
+      batteryVal: $("#batteryVal"),
+      playScore: $("#playScore"),
+      stressScore: $("#stressScore"),
+      nearMisses: $("#nearMisses"),
+      confidenceMetric: $("#confidenceMetric"),
+      dataMetric: $("#dataMetric"),
+      riskScore: $("#riskScore"),
+      riskMetric: $("#riskMetric"),
+      guardrailText: $("#guardrailText"),
+      reportBox: $("#reportBox"),
+      aiFeedback: $("#aiFeedback"),
+      customPrompt: $("#customPrompt")
+    };
+
+    const themeToggle = $("#themeToggle");
+
+    function syncThemeButton() {
+      const isDark = document.body.dataset.theme === "dark";
+      themeToggle.textContent = isDark ? "Light mode" : "Dark mode";
+      themeToggle.setAttribute("aria-pressed", String(isDark));
+    }
+
+    const inputs = {
+      scenario: $("#scenarioSelect"),
+      petType: $("#petType"),
+      gameMode: $("#gameMode"),
+      energy: $("#energy"),
+      comfort: $("#comfort"),
+      confidence: $("#confidence"),
+      autonomy: $("#autonomy"),
+      maxSpeed: $("#maxSpeed"),
+      learning: $("#learningToggle"),
+      privacy: $("#privacyToggle")
+    };
+
+    const room = { w: 1280, h: 800 };
+    const zones = {
+      bed: { x: 70, y: 560, w: 236, h: 150, label: "rest zone" },
+      dock: { x: 1082, y: 650, w: 116, h: 74, label: "dock" },
+      sofa: { x: 72, y: 74, w: 338, h: 154, label: "sofa" },
+      table: { x: 510, y: 262, w: 210, h: 148, label: "table" },
+      rug: { x: 420, y: 118, w: 505, h: 394, label: "play rug" },
+      water: { x: 965, y: 92, w: 130, h: 86, label: "water" }
+    };
+
+    const obstacles = [zones.sofa, zones.table, zones.water];
+    const states = {
+      Scanning: { color: "#286ea6", reason: "Robot is reading pet activity, body language, and room context." },
+      Dormant: { color: "#737d86", reason: "Pet appears asleep or inactive; robot stays quiet." },
+      Invite: { color: "#bd7a1d", reason: "Pet is alert and comfortable; robot offers a low-pressure game." },
+      Play: { color: "#16806f", reason: "Pet is engaged; robot varies movement while preserving distance." },
+      Treat: { color: "#467c4c", reason: "Robot pauses for a puzzle or reward under owner policy." },
+      Retreat: { color: "#b34a42", reason: "Pet comfort is low or distance is too close; robot backs away." },
+      Escalate: { color: "#744489", reason: "Unclear signals or high-risk autonomy require owner review." },
+      Docking: { color: "#20303d", reason: "Robot returns to dock because the session is complete, paused, or low battery." }
+    };
+
+    const petProfiles = {
+      cat: { body: "#354350", accent: "#f6f0e4", baseSpeed: 0.9, engage: 1.0, caution: 1.0 },
+      dog: { body: "#7b5138", accent: "#f2d7b5", baseSpeed: 1.15, engage: 1.25, caution: 0.82 },
+      rabbit: { body: "#6f6a64", accent: "#ffffff", baseSpeed: 0.75, engage: 0.75, caution: 1.35 }
+    };
+
+    const gameModes = {
+      feather: { label: "Feather lure", rewardEvery: 9, speedBias: 1.0 },
+      treat: { label: "Treat trail", rewardEvery: 7, speedBias: 0.72 },
+      follow: { label: "Follow-me", rewardEvery: 12, speedBias: 0.9 },
+      puzzle: { label: "Puzzle pause", rewardEvery: 5, speedBias: 0.55 }
+    };
+
+    const robot = {
+      x: 1140,
+      y: 684,
+      r: 34,
+      angle: 0,
+      state: "Scanning",
+      targetX: 640,
+      targetY: 400,
+      override: false,
+      battery: 100,
+      confidenceMemory: 82,
+      sessionGoal: 110
+    };
+
+    const pet = {
+      x: 360,
+      y: 520,
+      vx: 0.7,
+      vy: -0.4,
+      sleeping: false,
+      posture: "curious",
+      lastEngaged: 0
+    };
+
+    const metrics = {
+      play: 0,
+      stress: 0,
+      nearMiss: 0,
+      risk: 0,
+      elapsed: 0,
+      treats: 0,
+      overrides: 0,
+      stateCounts: Object.fromEntries(Object.keys(states).map(key => [key, 0]))
+    };
+
+    let tick = 0;
+    let paused = false;
+    let lastTime = performance.now();
+    let lastSimPatch = null;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function center(rect) {
+      return { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
+    }
+
+    function inRect(point, rect, pad = 0) {
+      return point.x > rect.x - pad && point.x < rect.x + rect.w + pad && point.y > rect.y - pad && point.y < rect.y + rect.h + pad;
+    }
+
+    function getNumber(input) {
+      return Number(input.value);
+    }
+
+    function setRange(input, value) {
+      input.value = Math.round(clamp(value, Number(input.min), Number(input.max)));
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function logEvent(message) {
+      const p = document.createElement("p");
+      p.textContent = `${formatTime(metrics.elapsed)} - ${message}`;
+      ui.eventLog.prepend(p);
+      while (ui.eventLog.children.length > 28) ui.eventLog.lastChild.remove();
+    }
+
+    function setState(next) {
+      if (robot.state !== next) {
+        robot.state = next;
+        logEvent(`${next}: ${states[next].reason}`);
+      }
+    }
+
+    function inferPosture() {
+      const energy = getNumber(inputs.energy);
+      const comfort = getNumber(inputs.comfort);
+      const d = distance(robot, pet);
+      if (pet.sleeping || energy < 14 || inRect(pet, zones.bed)) return "sleeping";
+      if (comfort < 30 || d < 78) return "avoidant";
+      if (energy > 72 && comfort > 45) return "playful";
+      if (comfort > 58) return "curious";
+      return "watchful";
+    }
+
+    function estimateRisk() {
+      const comfort = getNumber(inputs.comfort);
+      const autonomy = getNumber(inputs.autonomy);
+      const confidence = getNumber(inputs.confidence);
+      const speed = getNumber(inputs.maxSpeed);
+      const d = distance(robot, pet);
+      let risk = 0;
+      risk += Math.max(0, 44 - comfort) * 0.9;
+      risk += Math.max(0, 65 - confidence) * 0.75;
+      risk += Math.max(0, autonomy - 68) * 0.55;
+      risk += Math.max(0, speed - 72) * 0.3;
+      risk += d < 90 ? 24 : 0;
+      risk += inputs.privacy.checked && inputs.learning.checked ? 10 : 0;
+      risk += metrics.stress * 2.5;
+      return clamp(risk, 0, 100);
+    }
+
+    function updateState() {
+      const energy = getNumber(inputs.energy);
+      const comfort = getNumber(inputs.comfort);
+      const confidence = getNumber(inputs.confidence);
+      const autonomy = getNumber(inputs.autonomy);
+      const mode = inputs.gameMode.value;
+      const d = distance(robot, pet);
+      const posture = inferPosture();
+      const risk = estimateRisk();
+      pet.posture = posture;
+      metrics.risk = risk;
+
+      if (paused || robot.override || robot.battery < 14 || metrics.play >= robot.sessionGoal) {
+        setState("Docking");
+      } else if (posture === "sleeping") {
+        setState("Dormant");
+      } else if (confidence < 38 || (risk > 68 && autonomy > 55) || metrics.stress > 8) {
+        setState("Escalate");
+      } else if (posture === "avoidant" || comfort < 36 || d < 82) {
+        setState("Retreat");
+      } else if (mode === "treat" && metrics.play > 0 && Math.floor(metrics.play) % gameModes[mode].rewardEvery === 0 && d > 125) {
+        setState("Treat");
+      } else if (energy > 62 && comfort > 45 && d < 390) {
+        setState("Play");
+      } else if (energy > 28 && comfort > 42) {
+        setState("Invite");
+      } else {
+        setState("Scanning");
+      }
+
+      ui.stateName.textContent = robot.state;
+      ui.stateReason.textContent = states[robot.state].reason;
+      ui.stateDot.style.background = states[robot.state].color;
+      ui.stateDot.style.boxShadow = `0 0 0 5px ${states[robot.state].color}22`;
+      $$(".node").forEach(node => node.classList.toggle("active", node.dataset.state === robot.state));
+    }
+
+    function avoidObstacleTarget(target) {
+      for (const obstacle of obstacles) {
+        if (inRect(target, obstacle, 54)) {
+          const c = center(obstacle);
+          const dx = target.x - c.x || 1;
+          const dy = target.y - c.y || 1;
+          const len = Math.hypot(dx, dy);
+          target.x = c.x + dx / len * (Math.max(obstacle.w, obstacle.h) / 2 + 92);
+          target.y = c.y + dy / len * (Math.max(obstacle.w, obstacle.h) / 2 + 92);
+        }
+      }
+      target.x = clamp(target.x, 58, room.w - 58);
+      target.y = clamp(target.y, 58, room.h - 58);
+      return target;
+    }
+
+    function chooseTarget() {
+      let target;
+      if (robot.state === "Docking" || robot.state === "Dormant") {
+        target = center(zones.dock);
+      } else if (robot.state === "Retreat" || robot.state === "Escalate") {
+        const dx = robot.x - pet.x || 1;
+        const dy = robot.y - pet.y || 1;
+        const len = Math.hypot(dx, dy);
+        target = { x: robot.x + dx / len * 220, y: robot.y + dy / len * 220 };
+      } else if (robot.state === "Invite") {
+        target = { x: pet.x + Math.cos(tick / 68) * 230, y: pet.y + Math.sin(tick / 82) * 170 };
+      } else if (robot.state === "Play") {
+        const mode = gameModes[inputs.gameMode.value];
+        target = { x: pet.x + Math.cos(tick / (18 / mode.speedBias)) * 180, y: pet.y + Math.sin(tick / (25 / mode.speedBias)) * 138 };
+      } else if (robot.state === "Treat") {
+        target = { x: pet.x + 126, y: pet.y + 92 };
+      } else {
+        target = { x: 640 + Math.cos(tick / 145) * 300, y: 392 + Math.sin(tick / 116) * 225 };
+      }
+      Object.assign(robot, { targetX: avoidObstacleTarget(target).x, targetY: avoidObstacleTarget(target).y });
+    }
+
+    function updateRobot(dt) {
+      chooseTarget();
+      const mode = gameModes[inputs.gameMode.value];
+      const speedCap = getNumber(inputs.maxSpeed) / 22;
+      const stateSpeed = { Dormant: 1.1, Scanning: 1.55, Invite: 2.0, Play: 2.8, Treat: 1.25, Retreat: 2.35, Escalate: 1.0, Docking: 2.15 };
+      const dx = robot.targetX - robot.x;
+      const dy = robot.targetY - robot.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const speed = Math.min(speedCap, stateSpeed[robot.state] * mode.speedBias) * dt * 60;
+      robot.x += dx / len * speed;
+      robot.y += dy / len * speed;
+      robot.x = clamp(robot.x, 54, room.w - 54);
+      robot.y = clamp(robot.y, 54, room.h - 54);
+      robot.angle = Math.atan2(dy, dx);
+
+      for (const obstacle of obstacles) {
+        if (inRect(robot, obstacle, robot.r)) {
+          const c = center(obstacle);
+          const pushX = robot.x - c.x || 1;
+          const pushY = robot.y - c.y || 1;
+          const pushLen = Math.hypot(pushX, pushY);
+          robot.x += pushX / pushLen * 8;
+          robot.y += pushY / pushLen * 8;
+        }
+      }
+    }
+
+    function updatePet(dt) {
+      const profile = petProfiles[inputs.petType.value];
+      const energy = getNumber(inputs.energy);
+      const comfort = getNumber(inputs.comfort);
+      const d = distance(robot, pet);
+
+      if (pet.posture === "sleeping") {
+        pet.x += (zones.bed.x + 125 - pet.x) * 0.012 * dt * 60;
+        pet.y += (zones.bed.y + 78 - pet.y) * 0.012 * dt * 60;
+        pet.vx *= 0.94;
+        pet.vy *= 0.94;
+        return;
+      }
+
+      if (robot.state === "Play" && comfort > 45) {
+        pet.vx += (robot.x - pet.x) / Math.max(d, 1) * 0.08 * profile.engage * dt * 60;
+        pet.vy += (robot.y - pet.y) / Math.max(d, 1) * 0.08 * profile.engage * dt * 60;
+        pet.lastEngaged = tick;
+      } else if (robot.state === "Retreat" || robot.state === "Escalate" || comfort < 34) {
+        pet.vx -= (robot.x - pet.x) / Math.max(d, 1) * 0.13 * profile.caution * dt * 60;
+        pet.vy -= (robot.y - pet.y) / Math.max(d, 1) * 0.13 * profile.caution * dt * 60;
+      } else {
+        pet.vx += Math.cos(tick / 37) * 0.024 * dt * 60;
+        pet.vy += Math.sin(tick / 31) * 0.024 * dt * 60;
+      }
+
+      const maxSpeed = (0.75 + energy / 30) * profile.baseSpeed;
+      const speed = Math.hypot(pet.vx, pet.vy) || 1;
+      if (speed > maxSpeed) {
+        pet.vx = pet.vx / speed * maxSpeed;
+        pet.vy = pet.vy / speed * maxSpeed;
+      }
+
+      pet.x += pet.vx * dt * 60;
+      pet.y += pet.vy * dt * 60;
+      if (pet.x < 56 || pet.x > room.w - 56) pet.vx *= -0.78;
+      if (pet.y < 56 || pet.y > room.h - 56) pet.vy *= -0.78;
+      pet.x = clamp(pet.x, 56, room.w - 56);
+      pet.y = clamp(pet.y, 56, room.h - 56);
+    }
+
+    function updateMetrics(dt) {
+      metrics.elapsed += dt;
+      metrics.stateCounts[robot.state] += dt;
+      const d = distance(robot, pet);
+
+      if (!paused) {
+        const drain = robot.state === "Play" ? 0.037 : robot.state === "Docking" ? 0.012 : 0.02;
+        robot.battery = clamp(robot.battery - drain * dt * 60, 0, 100);
+      }
+      if (robot.state === "Docking" && distance(robot, center(zones.dock)) < 58) {
+        robot.battery = clamp(robot.battery + 0.08 * dt * 60, 0, 100);
+      }
+
+      if (robot.state === "Play" && d > 96 && d < 410) {
+        metrics.play += (0.055 + getNumber(inputs.energy) / 2600) * dt * 60;
+        if (inputs.learning.checked && !inputs.privacy.checked) {
+          setRange(inputs.comfort, getNumber(inputs.comfort) + 0.012 * dt * 60);
+        }
+      }
+      if ((robot.state === "Retreat" || robot.state === "Escalate") && tick % 45 === 0) metrics.stress += 1;
+      if (d < 74 && tick % 32 === 0) {
+        metrics.nearMiss += 1;
+        setRange(inputs.comfort, getNumber(inputs.comfort) - 2);
+        logEvent("Near miss: robot got too close; comfort decreased.");
+      }
+      if (robot.state === "Treat" && tick % 90 === 0) {
+        metrics.treats += 1;
+        metrics.play += 0.7;
+        logEvent("Reward event: puzzle or treat pause completed.");
+      }
+    }
+
+    function updateUI() {
+      const riskLabel = metrics.risk > 66 ? "High" : metrics.risk > 36 ? "Medium" : "Low";
+      ui.runTime.textContent = formatTime(metrics.elapsed);
+      ui.batteryVal.textContent = `${Math.round(robot.battery)}%`;
+      ui.playScore.textContent = Math.floor(metrics.play);
+      ui.stressScore.textContent = metrics.stress;
+      ui.nearMisses.textContent = metrics.nearMiss;
+      ui.confidenceMetric.textContent = `${getNumber(inputs.confidence)}%`;
+      ui.dataMetric.textContent = inputs.privacy.checked ? "Private" : "Local";
+      ui.riskScore.textContent = riskLabel;
+      ui.riskMetric.className = `metric ${riskLabel === "High" ? "risk-high" : riskLabel === "Medium" ? "risk-med" : "risk-low"}`;
+      $("#energyVal").textContent = getNumber(inputs.energy);
+      $("#comfortVal").textContent = getNumber(inputs.comfort);
+      $("#confidenceVal").textContent = getNumber(inputs.confidence);
+      $("#autonomyVal").textContent = getNumber(inputs.autonomy);
+      $("#speedVal").textContent = getNumber(inputs.maxSpeed);
+      ui.guardrailText.textContent = inputs.privacy.checked
+        ? "Guardrail: privacy mode disables detailed learning and keeps maps local."
+        : "Guardrail: play stops when comfort drops, distance is too close, battery is low, or sensor confidence is weak.";
+    }
+
+    function roundRect(x, y, w, h, r, fill = true) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      fill ? ctx.fill() : ctx.stroke();
+    }
+
+    function drawLabel(text, x, y) {
+      const dark = document.body.dataset.theme === "dark";
+      ctx.save();
+      ctx.fillStyle = dark ? "rgba(23,34,43,0.9)" : "rgba(255,255,255,0.86)";
+      ctx.strokeStyle = dark ? "#31414d" : "#d8e0e5";
+      ctx.lineWidth = 1.5;
+      const width = ctx.measureText(text).width + 18;
+      roundRect(x, y, width, 26, 6, true);
+      ctx.stroke();
+      ctx.fillStyle = dark ? "#b5c1c9" : "#5f6f7d";
+      ctx.font = "12px sans-serif";
+      ctx.fillText(text, x + 9, y + 17);
+      ctx.restore();
+    }
+
+    function drawRoom() {
+      const dark = document.body.dataset.theme === "dark";
+      const palette = dark
+        ? {
+            floor: "#18222b", wall: "#31414d", rug: "#2e3d45", rugLine: "#4a5a63",
+            sofa: "#365465", cushion: "#49715f", table: "#6f513b", tableTop: "#4e392b",
+            bed: "#314d43", pillow: "#d6d2c8", waterBase: "#243f4a", water: "#4d95ad",
+            dock: "#0f171d", dockLight: "#78a7bf"
+          }
+        : {
+            floor: "#e9dfcf", wall: "#cabda8", rug: "#d9c8aa", rugLine: "#bfae92",
+            sofa: "#85a8b8", cushion: "#6f95a6", table: "#b98055", tableTop: "#9c6847",
+            bed: "#c8ded0", pillow: "#f6f0e4", waterBase: "#ddeff3", water: "#62a6ba",
+            dock: "#2c3c48", dockLight: "#9bb7c8"
+          };
+      ctx.clearRect(0, 0, room.w, room.h);
+      ctx.fillStyle = palette.floor;
+      ctx.fillRect(0, 0, room.w, room.h);
+      ctx.strokeStyle = palette.wall;
+      ctx.lineWidth = 8;
+      ctx.strokeRect(24, 24, room.w - 48, room.h - 48);
+
+      ctx.fillStyle = palette.rug;
+      roundRect(zones.rug.x, zones.rug.y, zones.rug.w, zones.rug.h, 28);
+      ctx.strokeStyle = palette.rugLine;
+      ctx.lineWidth = 3;
+      roundRect(zones.rug.x + 16, zones.rug.y + 16, zones.rug.w - 32, zones.rug.h - 32, 22, false);
+
+      ctx.fillStyle = palette.sofa;
+      roundRect(zones.sofa.x, zones.sofa.y, zones.sofa.w, zones.sofa.h, 22);
+      ctx.fillStyle = palette.cushion;
+      roundRect(zones.sofa.x + 24, zones.sofa.y + 22, 126, 92, 14);
+      roundRect(zones.sofa.x + 182, zones.sofa.y + 22, 126, 92, 14);
+
+      ctx.fillStyle = palette.table;
+      roundRect(zones.table.x, zones.table.y, zones.table.w, zones.table.h, 18);
+      ctx.fillStyle = palette.tableTop;
+      ctx.fillRect(zones.table.x + 25, zones.table.y + 22, zones.table.w - 50, zones.table.h - 44);
+
+      ctx.fillStyle = palette.bed;
+      roundRect(zones.bed.x, zones.bed.y, zones.bed.w, zones.bed.h, 22);
+      ctx.fillStyle = palette.pillow;
+      roundRect(zones.bed.x + 28, zones.bed.y + 28, zones.bed.w - 56, zones.bed.h - 56, 18);
+
+      ctx.fillStyle = palette.waterBase;
+      roundRect(zones.water.x, zones.water.y, zones.water.w, zones.water.h, 18);
+      ctx.fillStyle = palette.water;
+      ctx.beginPath();
+      ctx.ellipse(zones.water.x + 65, zones.water.y + 43, 42, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = palette.dock;
+      roundRect(zones.dock.x, zones.dock.y, zones.dock.w, zones.dock.h, 12);
+      ctx.fillStyle = palette.dockLight;
+      ctx.fillRect(zones.dock.x + 17, zones.dock.y + 28, zones.dock.w - 34, 8);
+
+      ctx.font = "12px sans-serif";
+      drawLabel("rest zone", zones.bed.x + 14, zones.bed.y - 34);
+      drawLabel("play rug", zones.rug.x + 18, zones.rug.y + 18);
+      drawLabel("dock", zones.dock.x + 18, zones.dock.y - 34);
+    }
+
+    function drawSignals() {
+      const dark = document.body.dataset.theme === "dark";
+      ctx.save();
+      ctx.strokeStyle = states[robot.state].color;
+      ctx.globalAlpha = 0.2;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(robot.x, robot.y, 118 + Math.sin(tick / 18) * 7, 0, Math.PI * 2);
+      ctx.stroke();
+      if (!inputs.privacy.checked) {
+        ctx.beginPath();
+        ctx.arc(robot.x, robot.y, 224, -0.4, 0.4);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = dark ? "#17222b" : "#ffffff";
+      ctx.strokeStyle = dark ? "#31414d" : "#becbd3";
+      ctx.lineWidth = 2;
+      roundRect(34, 34, 286, 112, 8);
+      ctx.stroke();
+      ctx.fillStyle = dark ? "#eef4f7" : "#17212b";
+      ctx.font = "700 20px sans-serif";
+      ctx.fillText(robot.state, 52, 68);
+      ctx.fillStyle = dark ? "#b5c1c9" : "#5f6f7d";
+      ctx.font = "14px sans-serif";
+      ctx.fillText(`Pet posture: ${pet.posture}`, 52, 96);
+      ctx.fillText(`Distance: ${Math.round(distance(robot, pet))} px`, 52, 122);
+      ctx.restore();
+    }
+
+    function drawRobot() {
+      ctx.save();
+      ctx.translate(robot.x, robot.y);
+      ctx.rotate(robot.angle);
+      ctx.fillStyle = states[robot.state].color;
+      ctx.beginPath();
+      ctx.arc(0, 0, robot.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 5;
+      ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(13, -10, 5, 0, Math.PI * 2);
+      ctx.arc(13, 10, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#17212b";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(8, 0);
+      ctx.lineTo(45, 0);
+      ctx.stroke();
+      if (robot.state === "Play" || robot.state === "Invite" || robot.state === "Treat") {
+        ctx.strokeStyle = inputs.gameMode.value === "treat" ? "#467c4c" : "#d63c6b";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-4, 0);
+        ctx.quadraticCurveTo(-52, -42, -86, -10);
+        ctx.stroke();
+        ctx.fillStyle = inputs.gameMode.value === "treat" ? "#467c4c" : "#d63c6b";
+        ctx.beginPath();
+        ctx.arc(-90, -8, 9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawPet() {
+      const profile = petProfiles[inputs.petType.value];
+      ctx.save();
+      ctx.translate(pet.x, pet.y);
+      const facing = pet.vx >= 0 ? 1 : -1;
+      ctx.scale(facing, 1);
+      ctx.fillStyle = pet.posture === "sleeping" ? "#7b6b61" : profile.body;
+      if (inputs.petType.value === "dog") {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 46, 26, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(38, -12, 23, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = profile.accent;
+        ctx.beginPath();
+        ctx.ellipse(45, -5, 10, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = profile.body;
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(-42, -5);
+        ctx.quadraticCurveTo(-72, -44, -26, -42);
+        ctx.stroke();
+      } else if (inputs.petType.value === "rabbit") {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 42, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(34, -12, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(32, -48, 9, 34, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(50, -45, 9, 31, 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = profile.accent;
+        ctx.beginPath();
+        ctx.arc(-38, -2, 10, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 42, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(35, -12, 21, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(25, -28);
+        ctx.lineTo(36, -55);
+        ctx.lineTo(45, -25);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(42, -25);
+        ctx.lineTo(58, -48);
+        ctx.lineTo(58, -16);
+        ctx.fill();
+        ctx.strokeStyle = profile.body;
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(-38, -3);
+        ctx.quadraticCurveTo(-72, -38, -28, -44);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(42, -15, 4, 0, Math.PI * 2);
+      ctx.fill();
+      if (pet.posture === "sleeping") {
+        ctx.fillStyle = "#17212b";
+        ctx.font = "bold 30px sans-serif";
+        ctx.fillText("Z", 66, -46);
+      }
+      ctx.restore();
+    }
+
+    function draw() {
+      drawRoom();
+      drawSignals();
+      drawPet();
+      drawRobot();
+    }
+
+    function loop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000 || 0.016);
+      lastTime = now;
+      if (!paused) {
+        tick += 1;
+        updateState();
+        updateRobot(dt);
+        updatePet(dt);
+        updateMetrics(dt);
+      }
+      updateUI();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function drawArrows() {
+      const flow = $("#flowCanvas");
+      const boxes = {
+        Scanning: { x: 131, y: 83 },
+        Dormant: { x: 421, y: 83 },
+        Invite: { x: 711, y: 83 },
+        Play: { x: 711, y: 295 },
+        Treat: { x: 711, y: 507 },
+        Retreat: { x: 421, y: 507 },
+        Escalate: { x: 131, y: 507 },
+        Docking: { x: 131, y: 295 }
+      };
+      const links = [
+        ["Scanning", "Dormant"],
+        ["Scanning", "Invite"],
+        ["Invite", "Play"],
+        ["Play", "Treat"],
+        ["Play", "Retreat"],
+        ["Treat", "Scanning"],
+        ["Retreat", "Escalate"],
+        ["Escalate", "Docking"],
+        ["Dormant", "Docking"],
+        ["Docking", "Scanning"]
+      ];
+      links.forEach(([from, to]) => {
+        const a = boxes[from];
+        const b = boxes[to];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const angle = Math.atan2(dy, dx);
+        const line = document.createElement("div");
+        line.className = "arrow";
+        line.style.width = `${Math.max(30, Math.hypot(dx, dy) - 178)}px`;
+        line.style.left = `${a.x + Math.cos(angle) * 92}px`;
+        line.style.top = `${a.y + Math.sin(angle) * 44}px`;
+        line.style.transform = `rotate(${angle}rad)`;
+        flow.appendChild(line);
+      });
+    }
+
+    function makeStoryboard() {
+      const scenes = {
+        1: ["#dcebe6", "sleep"], 2: ["#e8ddc4", "invite"], 3: ["#d9e5ee", "play"], 4: ["#f1dfdc", "retreat"],
+        5: ["#eadff0", "alert"], 6: ["#e6e3d8", "dock"], 7: ["#dde8f0", "owner"], 8: ["#e7ead9", "reflect"]
+      };
+      $$(".card-art").forEach(el => {
+        const [bg, type] = scenes[el.dataset.art];
+        const robotX = type === "dock" ? 285 : type === "retreat" ? 82 : 96;
+        const petX = type === "play" ? 190 : type === "owner" ? 190 : 246;
+        el.innerHTML = `
+          <svg viewBox="0 0 360 180" role="img" aria-label="${type} storyboard panel">
+            <rect width="360" height="180" fill="${bg}"/>
+            <rect x="20" y="122" width="320" height="31" rx="8" fill="#cbbda7"/>
+            <circle cx="${robotX}" cy="108" r="26" fill="#286ea6"/>
+            <circle cx="${petX}" cy="108" r="31" fill="#354350"/>
+            <circle cx="${petX + 29}" cy="92" r="17" fill="#354350"/>
+            <path d="M${petX - 30} 106 C ${type === "sleep" ? 174 : 144} 60, ${type === "sleep" ? 224 : 126} 60, ${type === "sleep" ? 184 : 150} 91" fill="none" stroke="#354350" stroke-width="8" stroke-linecap="round"/>
+            ${type === "invite" || type === "play" ? `<path d="M${robotX + 26} 108 C 150 76, 177 126, ${type === "play" ? 178 : 148} 94" fill="none" stroke="#d63c6b" stroke-width="4"/>` : ""}
+            ${type === "sleep" ? "<text x='286' y='72' font-size='30' font-weight='700' fill='#16212b'>Z</text>" : ""}
+            ${type === "alert" ? "<rect x='260' y='36' width='54' height='36' rx='7' fill='#744489'/><text x='276' y='61' font-size='18' font-weight='700' fill='#fff'>!</text>" : ""}
+            ${type === "dock" ? "<rect x='276' y='96' width='64' height='45' rx='7' fill='#2c3c48'/><rect x='286' y='114' width='43' height='6' fill='#9bb7c8'/>" : ""}
+            ${type === "owner" ? "<rect x='255' y='51' width='48' height='78' rx='12' fill='#20303d'/><circle cx='279' cy='72' r='13' fill='#fffdf8'/>" : ""}
+            ${type === "reflect" ? "<path d='M80 55 H285 V120 H80 Z' fill='#fffdf8' stroke='#8a9ba6' stroke-width='3'/><path d='M112 82 H250 M112 102 H214' stroke='#61707d' stroke-width='5'/>" : ""}
+          </svg>`;
+      });
+    }
+
+    function applyScenario(name) {
+      const scenarios = {
+        balanced: { energy: 42, comfort: 78, confidence: 82, autonomy: 58, maxSpeed: 55, privacy: false, learning: true, sleeping: false },
+        sleepy: { energy: 8, comfort: 86, confidence: 76, autonomy: 44, maxSpeed: 35, privacy: false, learning: true, sleeping: true },
+        zoomies: { energy: 92, comfort: 66, confidence: 78, autonomy: 62, maxSpeed: 82, privacy: false, learning: true, sleeping: false },
+        nervous: { energy: 38, comfort: 24, confidence: 54, autonomy: 74, maxSpeed: 46, privacy: false, learning: true, sleeping: false },
+        privacy: { energy: 46, comfort: 74, confidence: 62, autonomy: 38, maxSpeed: 50, privacy: true, learning: false, sleeping: false }
+      };
+      const s = scenarios[name];
+      setRange(inputs.energy, s.energy);
+      setRange(inputs.comfort, s.comfort);
+      setRange(inputs.confidence, s.confidence);
+      setRange(inputs.autonomy, s.autonomy);
+      setRange(inputs.maxSpeed, s.maxSpeed);
+      inputs.privacy.checked = s.privacy;
+      inputs.learning.checked = s.learning;
+      pet.sleeping = s.sleeping;
+      logEvent(`Scenario loaded: ${inputs.scenario.options[inputs.scenario.selectedIndex].text}.`);
+    }
+
+    function resetSession() {
+      robot.x = 1140;
+      robot.y = 684;
+      robot.battery = 100;
+      robot.override = false;
+      robot.state = "Scanning";
+      pet.x = 360;
+      pet.y = 520;
+      pet.vx = 0.7;
+      pet.vy = -0.4;
+      pet.sleeping = false;
+      Object.assign(metrics, { play: 0, stress: 0, nearMiss: 0, risk: 0, elapsed: 0, treats: 0, overrides: 0 });
+      metrics.stateCounts = Object.fromEntries(Object.keys(states).map(key => [key, 0]));
+      ui.eventLog.innerHTML = "";
+      applyScenario(inputs.scenario.value);
+      logEvent("Room reset. Robot begins a fresh scan.");
+    }
+
+    function generateReport() {
+      const topState = Object.entries(metrics.stateCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || robot.state;
+      ui.reportBox.value = [
+        "Pet Enrichment Roomba - Final Project Report",
+        "",
+        `Scenario: ${inputs.scenario.options[inputs.scenario.selectedIndex].text}`,
+        `Pet type: ${inputs.petType.options[inputs.petType.selectedIndex].text}`,
+        `Game mode: ${gameModes[inputs.gameMode.value].label}`,
+        `Session time: ${formatTime(metrics.elapsed)}`,
+        `Dominant robot state: ${topState}`,
+        `Enrichment score: ${Math.floor(metrics.play)}`,
+        `Stress warnings: ${metrics.stress}`,
+        `Near misses: ${metrics.nearMiss}`,
+        `Battery: ${Math.round(robot.battery)}%`,
+        `Privacy mode: ${inputs.privacy.checked ? "on" : "off"}`,
+        "",
+        "Design claim:",
+        "The robot should enrich a pet's day without replacing human care. Its core value is low-pressure consent: the pet can ignore, approach, play, or retreat.",
+        "",
+        "Main risk:",
+        "The robot may misread body language, learn an unwanted policy, collect sensitive home data, or make owners feel that bonding time can be outsourced.",
+        "",
+        "Mitigation:",
+        "Use conservative defaults, short sessions, speed and distance limits, local-only maps, privacy mode, animal-expert rules, visible owner override, and escalation when confidence is low.",
+        "",
+        "Classroom discussion question:",
+        "Who should get final say over the robot's values: owners, AI designers, animal behaviour experts, regulators, or the pet's observed preferences?"
+      ].join("\n");
+    }
+
+    function getLiveContext() {
+      const topState = Object.entries(metrics.stateCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || robot.state;
+      return {
+        scenario: inputs.scenario.options[inputs.scenario.selectedIndex].text,
+        petType: inputs.petType.options[inputs.petType.selectedIndex].text,
+        gameMode: gameModes[inputs.gameMode.value].label,
+        robotState: robot.state,
+        dominantState: topState,
+        petPosture: pet.posture,
+        distancePixels: Math.round(distance(robot, pet)),
+        sliders: {
+          energy: getNumber(inputs.energy),
+          comfort: getNumber(inputs.comfort),
+          confidence: getNumber(inputs.confidence),
+          autonomy: getNumber(inputs.autonomy),
+          maxSpeed: getNumber(inputs.maxSpeed)
+        },
+        toggles: {
+          privacy: inputs.privacy.checked,
+          learning: inputs.learning.checked,
+          ownerOverride: robot.override
+        },
+        metrics: {
+          elapsed: formatTime(metrics.elapsed),
+          enrichment: Math.floor(metrics.play),
+          stressWarnings: metrics.stress,
+          nearMisses: metrics.nearMiss,
+          risk: Math.round(metrics.risk),
+          battery: Math.round(robot.battery)
+        }
+      };
+    }
+
+    function extractSimPatch(text) {
+      const match = text.match(/SIM_PATCH:\s*(\{[\s\S]*?\})/);
+      if (!match) return null;
+      try {
+        return JSON.parse(match[1]);
+      } catch {
+        return null;
+      }
+    }
+
+    function applySuggestedSettings() {
+      if (!lastSimPatch) {
+        ui.aiFeedback.textContent += "\n\nNo valid SIM_PATCH settings were found in the latest model response.";
+        return;
+      }
+      if (Number.isFinite(lastSimPatch.energy)) setRange(inputs.energy, lastSimPatch.energy);
+      if (Number.isFinite(lastSimPatch.comfort)) setRange(inputs.comfort, lastSimPatch.comfort);
+      if (Number.isFinite(lastSimPatch.confidence)) setRange(inputs.confidence, lastSimPatch.confidence);
+      if (Number.isFinite(lastSimPatch.autonomy)) setRange(inputs.autonomy, lastSimPatch.autonomy);
+      if (Number.isFinite(lastSimPatch.maxSpeed)) setRange(inputs.maxSpeed, lastSimPatch.maxSpeed);
+      if (typeof lastSimPatch.privacy === "boolean") inputs.privacy.checked = lastSimPatch.privacy;
+      if (typeof lastSimPatch.learning === "boolean") inputs.learning.checked = lastSimPatch.learning;
+      pet.sleeping = getNumber(inputs.energy) < 15;
+      updateUI();
+      logEvent("Applied local Gemma's suggested simulator settings.");
+    }
+
+    async function askLocalGemma(mode, button) {
+      if (mode === "critique") generateReport();
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = "Thinking...";
+      lastSimPatch = null;
+      ui.aiFeedback.textContent = "Sending live simulator context to local LM Studio...";
+      try {
+        const response = await fetch("/api/lmstudio/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode,
+            context: getLiveContext(),
+            report: ui.reportBox.value,
+            customPrompt: ui.customPrompt.value,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok || data.error) {
+          throw new Error(data.error || `LM Studio request failed with ${response.status}`);
+        }
+        lastSimPatch = extractSimPatch(data.feedback);
+        ui.aiFeedback.textContent = `Model: ${data.model}\n\n${data.feedback}`;
+        if (lastSimPatch) {
+          ui.aiFeedback.textContent += "\n\nSuggested settings detected. Use Apply suggested settings to push them into the simulator.";
+        }
+        logEvent(`Local Gemma generated ${mode} output.`);
+      } catch (error) {
+        ui.aiFeedback.textContent = [
+          "Local Gemma request failed.",
+          "",
+          String(error.message || error),
+          "",
+          "Check that LM Studio is running with the local server enabled on 127.0.0.1:1234 and that google/gemma-4-e4b is loaded."
+        ].join("\n");
+        logEvent("Local Gemma request failed.");
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
+    $$(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        $$(".tab").forEach(t => t.classList.remove("active"));
+        $$(".view").forEach(view => view.classList.remove("active"));
+        tab.classList.add("active");
+        $(`#${tab.dataset.view}`).classList.add("active");
+        if (tab.dataset.view === "report") generateReport();
+      });
+    });
+
+    inputs.scenario.addEventListener("change", () => applyScenario(inputs.scenario.value));
+    themeToggle.addEventListener("click", () => {
+      const next = document.body.dataset.theme === "dark" ? "light" : "dark";
+      document.body.dataset.theme = next;
+      localStorage.setItem("petRoombaTheme", next);
+      syncThemeButton();
+      logEvent(`${next === "dark" ? "Dark" : "Light"} mode enabled.`);
+    });
+    inputs.privacy.addEventListener("change", () => {
+      if (inputs.privacy.checked) inputs.learning.checked = false;
+      logEvent(inputs.privacy.checked ? "Privacy mode enabled; detailed learning disabled." : "Privacy mode disabled; local adaptive learning can resume.");
+    });
+    inputs.learning.addEventListener("change", () => {
+      if (inputs.learning.checked && inputs.privacy.checked) inputs.privacy.checked = false;
+      logEvent(inputs.learning.checked ? "Adaptive learning enabled." : "Adaptive learning disabled.");
+    });
+
+    $("#pauseBtn").addEventListener("click", event => {
+      paused = !paused;
+      event.currentTarget.textContent = paused ? "Resume" : "Pause";
+      logEvent(paused ? "Simulation paused." : "Simulation resumed.");
+    });
+    $("#sleepBtn").addEventListener("click", () => {
+      pet.sleeping = true;
+      setRange(inputs.energy, 8);
+      logEvent("Manual event: pet curls up for a nap.");
+    });
+    $("#wakeBtn").addEventListener("click", () => {
+      pet.sleeping = false;
+      setRange(inputs.energy, 45);
+      setRange(inputs.comfort, 76);
+      logEvent("Manual event: pet wakes and observes the robot.");
+    });
+    $("#zoomBtn").addEventListener("click", () => {
+      pet.sleeping = false;
+      setRange(inputs.energy, 92);
+      setRange(inputs.comfort, 68);
+      pet.vx = 4;
+      pet.vy = -3;
+      logEvent("Manual event: pet has high-energy zoomies.");
+    });
+    $("#overrideBtn").addEventListener("click", () => {
+      robot.override = !robot.override;
+      metrics.overrides += robot.override ? 1 : 0;
+      logEvent(robot.override ? "Owner override active; robot returns to dock." : "Owner override cleared.");
+    });
+    $("#resetBtn").addEventListener("click", resetSession);
+    $("#generateReportBtn").addEventListener("click", generateReport);
+    ["aiCritiqueBtn", "aiDilemmaBtn", "aiCouncilBtn", "aiPolicyBtn", "aiFailureBtn", "aiCustomBtn"].forEach(id => {
+      const button = $(`#${id}`);
+      button.addEventListener("click", () => askLocalGemma(button.dataset.aiMode, button));
+    });
+    $("#applyPatchBtn").addEventListener("click", applySuggestedSettings);
+    $("#copyReportBtn").addEventListener("click", async () => {
+      generateReport();
+      try {
+        await navigator.clipboard.writeText(ui.reportBox.value);
+        logEvent("Report copied to clipboard.");
+      } catch {
+        ui.reportBox.select();
+        logEvent("Clipboard unavailable; report text selected.");
+      }
+    });
+
+    ["input", "change"].forEach(type => {
+      [inputs.energy, inputs.comfort, inputs.confidence, inputs.autonomy, inputs.maxSpeed].forEach(input => {
+        input.addEventListener(type, updateUI);
+      });
+    });
+
+    drawArrows();
+    makeStoryboard();
+    syncThemeButton();
+    resetSession();
+    generateReport();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

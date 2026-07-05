@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Cup 2026 — Predictor</title>
+    <meta name="description" content="AI Predictions for the FIFA World Cup 2026.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon" aria-hidden="true">26</div>
+                <div class="brand-text">
+                    <strong>WC Predictor</strong>
+                    <span>Monte Carlo engine</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <button class="nav-item" data-tab="group-stage" data-title="Group Stage">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    <span>Groups</span>
+                </button>
+                <button class="nav-item active" data-tab="knockout-stage" data-title="Knockout Bracket">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h6"/><circle cx="19" cy="15" r="3"/></svg>
+                    <span>Knockout</span>
+                </button>
+                <button class="nav-item" data-tab="simulation-logs" data-title="Simulation Logs">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                    <span>Logs</span>
+                </button>
+                <button class="nav-item" data-tab="simulation-rules" data-title="Engine Reference">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+                    <span>Engine</span>
+                </button>
+                <button class="nav-item" data-tab="model-accuracy" data-title="Model Accuracy">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+                    <span>Accuracy</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-foot">
+                <p>48 teams · 12 groups · 104 matches</p>
+            </div>
+        </aside>
+
+        <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+
+        <div class="main-column">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Open menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                    </button>
+                    <div class="topbar-titles">
+                        <h1 class="page-title" id="page-title">Knockout Bracket</h1>
+                        <p class="page-subtitle" id="page-subtitle">Round of 16 through final</p>
+                    </div>
+                </div>
+                <button type="button" id="theme-toggle" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme">
+                    <span class="theme-icon">☀️</span>
+                </button>
+            </header>
+
+            <main class="content-area">
+                <section id="group-stage" class="tab-content">
+                    <div class="page-header">
+                        <div>
+                            <h2>Group Stage</h2>
+                            <p class="section-desc">Final standings from the opening round</p>
+                        </div>
+                        <span class="status-pill">Concluded</span>
+                    </div>
+                    <div class="groups-grid" id="groups-container"></div>
+                </section>
+
+                <section id="knockout-stage" class="tab-content active">
+                    <div class="page-header">
+                        <div>
+                            <h2>Knockout Bracket</h2>
+                            <p class="section-desc">Run simulations to predict the rest of the tournament</p>
+                        </div>
+                        <div class="knockout-meta" id="knockout-meta"></div>
+                    </div>
+
+                    <div class="command-bar">
+                        <div class="command-bar-main">
+                            <button type="button" id="predict-1x-btn" class="btn btn-secondary">Quick sim</button>
+                            <div class="runs-control">
+                                <label for="sim-count" class="runs-label">Runs</label>
+                                <input type="number" id="sim-count" value="100000" min="1" class="runs-input" title="Simulations per match">
+                            </div>
+                            <button type="button" id="predict-mx-btn" class="btn btn-primary">Run Monte Carlo</button>
+                            <button type="button" id="stop-btn" class="btn btn-danger" hidden>Stop</button>
+                            <button type="button" id="reset-btn" class="btn btn-ghost">Reset</button>
+                        </div>
+                        <div class="command-bar-progress">
+                            <div class="progress-track" id="progress-container">
+                                <div class="progress-fill" id="sim-progress-bar"></div>
+                            </div>
+                            <span id="timer-text" class="timer-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="knockout-layout">
+                        <aside class="odds-panel">
+                            <div class="panel-head">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22M12 2v7"/></svg>
+                                <span>Champion odds</span>
+                            </div>
+                            <div class="odds-list" id="outrights-list">
+                                <p class="empty-state">Loading odds…</p>
+                            </div>
+                        </aside>
+
+                        <div class="bracket-panel">
+                            <div class="bracket-scroll">
+                                <div class="bracket-container">
+                                    <div class="bracket-round round-of-32 bracket-round--settled" id="round-32">
+                                        <h3 class="round-label">Round of 32<em>Settled</em></h3>
+                                        <div class="matchups-col" id="r32-matches"></div>
+                                    </div>
+                                    <div class="bracket-round round-of-16 bracket-round--live" id="round-16">
+                                        <h3 class="round-label">Round of 16<em>Up next</em></h3>
+                                        <div class="matchups-col" id="r16-matches"></div>
+                                    </div>
+                                    <div class="bracket-round quarter-finals" id="round-8">
+                                        <h3 class="round-label">Quarter-finals</h3>
+                                        <div class="matchups-col" id="qf-matches"></div>
+                                    </div>
+                                    <div class="bracket-round semi-finals" id="round-4">
+                                        <h3 class="round-label">Semi-finals</h3>
+                                        <div class="matchups-col" id="sf-matches"></div>
+                                    </div>
+                                    <div class="bracket-round final" id="round-2">
+                                        <h3 class="round-label">Final</h3>
+                                        <div class="matchups-col" id="f-matches"></div>
+                                    </div>
+                                    <div class="bracket-round champion-round" id="round-1">
+                                        <h3 class="round-label">Champion</h3>
+                                        <div class="champion-box" id="champion-box">
+                                            <div class="champion-placeholder">
+                                                <span class="champion-trophy" aria-hidden="true">🏆</span>
+                                                <span class="champion-hint">Awaiting simulation</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="simulation-logs" class="tab-content">
+<div class="page-header">
+        <div>
+            <h2>Simulation logs</h2>
+            <p class="section-desc">Per-match breakdown from the latest run</p>
+        </div>
+        <span class="status-pill">Last run</span>
+    </div>
+                    <div class="logs-container" id="logs-container">
+                        <p class="empty-state">Run a simulation to see matchup breakdowns.</p>
+                    </div>
+                </section>
+
+                <section id="simulation-rules" class="tab-content">
+                    <div class="page-header">
+                        <div>
+                            <h2>Engine reference</h2>
+                            <p class="section-desc">How predictions are built, why results vary, and what each number means</p>
+                        </div>
+                        <span class="status-pill">Docs</span>
+                    </div>
+
+                    <div class="rules-callout">
+                        <h3>Why Argentina one run and France the next?</h3>
+                        <p>This is a <strong>probabilistic simulator</strong>, not a single fixed forecast. Football is noisy — especially finals between evenly matched teams (Argentina ~2148 Elo, France ~2134).</p>
+                        <ul>
+                            <li><strong>Quick sim (1 run)</strong> — rolls the dice once per match. Injuries, red cards, random refs, ±25 Elo jitter. Champion can flip every click. Good for “what if?” storylines.</li>
+                            <li><strong>Monte Carlo (default 100,000 runs/match)</strong> — each knockout tie is simulated 100k times; the <em>majority winner</em> advances. Match win % stabilises (e.g. 54% / 46%), but narrative randomness still runs inside each worker (refs, jitter, injuries, cards). Re-running can still change the bracket champion because later rounds inherit fatigue, suspensions, and morale from earlier stochastic results.</li>
+                            <li><strong>Bracket champion ≠ tournament odds</strong> — the trophy box shows one path through the bracket. The <strong>Champion odds</strong> panel runs 3,000 independent full-tournament sims and ranks who wins the cup most often.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rules-grid">
+                        <div class="rules-card rules-card--wide">
+                            <h3>Calibration data (pre-tournament)</h3>
+                            <p>Team attack/defence strengths are fitted from weighted match history. Live knockout predictions use <code>live</code> mode (includes 2026 results); the Accuracy tab uses <code>pretournament</code> only (no leakage).</p>
+                            <ul>
+                                <li>World Cup 2018 &amp; 2022 <span>weight 1.0</span></li>
+                                <li>Euro / Copa / AFCON / Asian Cup / qualifiers 2023–25 <span>weight 0.58</span></li>
+                                <li>World Cup 2026 completed matches <span>weight 2.5 (live only)</span></li>
+                                <li>Teams with sparse history <span>Elo + squad priors</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Blended xG engine</h3>
+                            <p>Expected goals for each team combine three signals multiplicatively on top of the Elo base:</p>
+                            <ul>
+                                <li>Elo → xG share <span>70% blend</span></li>
+                                <li>Dixon-Coles fitted form <span>×^0.12</span></li>
+                                <li>Squad ratings (11 players) <span>×^0.22</span></li>
+                            </ul>
+                            <p>Quick sim uses shot-by-shot micro-simulation (~9 shots per xG). Monte Carlo uses blended λ + Poisson (faster, same calibration).</p>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Logistic win expectancy</h3>
+                            <p>xG split uses logistic Elo expectancy:</p>
+                            <div class="math-display">
+                                We<sub>1</sub> = <div class="fraction"><span class="numerator">1</span><span class="denominator">1 + 10<sup>-&Delta;ELO / 400</sup></span></div>
+                            </div>
+                            <p><code>ELO</code> = 55% World Elo + 45% squad composite. Close games (|ΔElo| &lt; 220) compress xG toward parity to reflect draw/upset rates.</p>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Dixon-Coles Poisson</h3>
+                            <p>Scorelines sampled from Poisson with correlation correction ρ = <strong>-0.20</strong> (draws boosted). Defensive matchups (avg DEF+GK ≥ 74) shave ~0.55 xG.</p>
+                            <div class="math-display">P(A, B) = P(A; λ<sub>1</sub>) · P(B; λ<sub>2</sub>) · τ(A, B)</div>
+                            <p>Capped at 5 goals per side. Group base 2.62 xG; knockout 2.28 xG before tactical mods.</p>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Tactical &amp; stage xG</h3>
+                            <ul>
+                                <li>5-3-2 (Park the Bus) <span>-0.35 xG</span></li>
+                                <li>4-4-2 (Structured) <span>-0.15 xG</span></li>
+                                <li>4-3-3 (Attacking) <span>+0.25 xG</span></li>
+                                <li>Both defensive formations <span>-0.20 xG, ρ → -0.10</span></li>
+                                <li>Quarter-finals <span>-0.08 xG</span></li>
+                                <li>Semi-finals <span>-0.15 xG</span></li>
+                                <li>Final <span>-0.20 xG</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Extra time &amp; penalties</h3>
+                            <p>Knockout draws → 30 min ET at 25% of regulation xG, then penalties.</p>
+                            <div class="math-display">xG<sub>ET</sub> = xG<sub>90</sub> × 0.25</div>
+                            <p>Penalties use a <strong>historical shootout model</strong> (17 WC/Euro/Copa/AFCON shootouts): per-team conversion skill + GK quality + composure. Close Elo gaps regress toward 50/50. Base conversion ~75.5%.</p>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Simulation modes</h3>
+                            <ul>
+                                <li>Runs per match <span>default 100,000</span></li>
+                                <li>Monte Carlo <span>random ref, full narrative modifiers</span></li>
+                                <li>Quick sim <span>same modifiers, 1 run + shot micro-sim</span></li>
+                                <li>Champion odds <span>3,000 full-bracket sims</span></li>
+                                <li>Backtest <span>neutral venue, no narrative mods</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Climate, venue &amp; travel</h3>
+                            <ul>
+                                <li>Host nation (home city) <span>+28 ELO</span></li>
+                                <li>Co-host / Americas at host venues <span>+10–16 ELO</span></li>
+                                <li>Adapted climate <span>+20 ELO</span></li>
+                                <li>Hostile climate <span>-35 ELO</span></li>
+                                <li>Mexico City altitude <span>-25 ELO</span></li>
+                                <li>Travel <span>-5 ELO / 1000 km</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="rules-card">
+                            <h3>Narrative modifiers</h3>
+                            <p>Active in Quick sim and Monte Carlo bracket runs. Disabled only in backtest so accuracy metrics stay fair.</p>
+                            <ul>
+                                <li>Tactical counter <span>+12 ELO</span></li>
+                                <li>Big win morale <span>+10 ELO</span></li>
+                                <li>H2H mental edge <span>+8 ELO</span></li>
+                                <li>Cinderella story <span>+12 ELO</span></li>
+                                <li>Upset jitter <span>±25 ELO</span></li>
+                                <li>Random injuries / reds / VAR <span>probabilistic</span></li>
+                                <li>ET / pen fatigue cascade <span>up to -60 ELO</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="rules-card rules-card--wide">
+                            <h3>Accuracy evaluation</h3>
+                            <p>Honest backtest on 88 completed 2026 matches using <strong>pre-tournament calibration only</strong> (~68–70% outcome accuracy at 1,000 runs/match). Metrics: Brier score, log loss, group vs R32 split, biggest misses. Run <code>node eval-backtest.mjs 1000</code> locally for comparison.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="model-accuracy" class="tab-content">
+                    <div class="page-header">
+                        <div>
+                            <h2>Model accuracy</h2>
+                            <p class="section-desc">Pre-tournament evaluation on 88 completed matches (72 group + 16 R32). Ratings fit on WC 2018/2022 plus Euro/Copa/AFCON/qualifiers 2023–2025 — no 2026 result leakage.</p>
+                        </div>
+                        <span class="status-pill status-pill--gold" id="calibration-mode-pill">Pre-tournament</span>
+                    </div>
+
+                    <div class="backtest-bar">
+                        <label for="backtest-runs" class="backtest-label">Runs per match</label>
+                        <select id="backtest-runs" class="field-select">
+                            <option value="100">100 — Fast</option>
+                            <option value="1000" selected>1,000 — Recommended</option>
+                            <option value="5000">5,000 — Precise</option>
+                            <option value="10000">10,000 — High precision</option>
+                            <option value="100000">100,000 — Max</option>
+                        </select>
+                        <button type="button" id="run-backtest-btn" class="btn btn-primary">Run backtest</button>
+                    </div>
+
+                    <div class="backtest-progress-container" id="backtest-progress-container" hidden>
+                        <div class="backtest-progress-bar" id="backtest-progress-bar"></div>
+                    </div>
+
+                    <div class="metrics-grid" id="metrics-grid" hidden>
+                        <div class="metric-card" id="brier-card">
+                            <div class="metric-value" id="brier-val">-</div>
+                            <div class="metric-label">Brier score</div>
+                            <div class="metric-desc">Probabilistic error. Ideal 0.0 — lower is better.</div>
+                        </div>
+                        <div class="metric-card" id="logloss-card">
+                            <div class="metric-value" id="logloss-val">-</div>
+                            <div class="metric-label">Avg log loss</div>
+                            <div class="metric-desc">Penalises confident wrong calls. Lower is better.</div>
+                        </div>
+                        <div class="metric-card" id="accuracy-card">
+                            <div class="metric-value" id="accuracy-val">-</div>
+                            <div class="metric-label">Outcome accuracy</div>
+                            <div class="metric-desc">% where the top predicted outcome occurred.</div>
+                        </div>
+                        <div class="metric-card" id="group-accuracy-card">
+                            <div class="metric-value" id="group-accuracy-val">-</div>
+                            <div class="metric-label">Group stage</div>
+                            <div class="metric-desc" id="group-accuracy-desc">72 matches</div>
+                        </div>
+                        <div class="metric-card" id="ko-accuracy-card">
+                            <div class="metric-value" id="ko-accuracy-val">-</div>
+                            <div class="metric-label">Round of 32</div>
+                            <div class="metric-desc" id="ko-accuracy-desc">16 matches</div>
+                        </div>
+                    </div>
+
+                    <div class="backtest-misses" id="backtest-misses" hidden>
+                        <h3>Biggest misses</h3>
+                        <p class="section-desc">Upsets where the model was most confident in the wrong outcome.</p>
+                        <ul class="misses-list" id="backtest-misses-list"></ul>
+                    </div>
+
+                    <div class="results-layout" id="results-layout" hidden>
+                        <div class="results-table-container">
+                            <h3>Match-by-match results</h3>
+                            <table class="results-table" id="backtest-results-table">
+                                <thead>
+                                    <tr>
+                                        <th>Match</th>
+                                        <th>Type</th>
+                                        <th>Actual</th>
+                                        <th>Win %</th>
+                                        <th>Draw %</th>
+                                        <th>Loss %</th>
+                                        <th>Brier</th>
+                                        <th>Call</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="backtest-results-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="site-footer">
+                <p>Simulated predictor using 2026 tournament data. Not a betting service.</p>
+            </footer>
+        </div>
+    </div>
+
+    <div id="tooltip" class="sports-tooltip hidden"></div>
+
+    <div id="drawer-overlay" class="drawer-overlay" hidden></div>
+    <div id="customizer-drawer" class="customizer-drawer">
+        <div class="drawer-header">
+            <h3 id="custom-team-title">🇲🇽 Mexico</h3>
+            <button type="button" id="close-drawer-btn" class="close-btn" aria-label="Close">&times;</button>
+        </div>
+        <div class="drawer-body">
+            <div class="input-group">
+                <label>Elo rating</label>
+                <div class="slider-row">
+                    <input type="range" id="custom-team-elo-slider" min="1200" max="2300" step="10">
+                    <span id="custom-team-elo-val">1943</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="custom-team-tactic">Formation</label>
+                <select id="custom-team-tactic" class="field-select">
+                    <option value="4-3-3">4-3-3 (Attacking)</option>
+                    <option value="4-2-3-1">4-2-3-1 (Balanced)</option>
+                    <option value="4-4-2">4-4-2 (Structured)</option>
+                    <option value="3-5-2">3-5-2 (Midfield)</option>
+                    <option value="5-3-2">5-3-2 (Defensive)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Average squad age</label>
+                <div class="slider-row">
+                    <input type="range" id="custom-team-age-slider" min="20" max="35" step="0.1">
+                    <span id="custom-team-age-val">25.8</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Attack (ATK)</label>
+                <div class="slider-row">
+                    <input type="range" id="custom-team-atk-slider" min="50" max="99" step="1">
+                    <span id="custom-team-atk-val">79</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Midfield (MID)</label>
+                <div class="slider-row">
+                    <input type="range" id="custom-team-mid-slider" min="50" max="99" step="1">
+                    <span id="custom-team-mid-val">78</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Defense (DEF)</label>
+                <div class="slider-row">
+                    <input type="range" id="custom-team-def-slider" min="50" max="99" step="1">
+                    <span id="custom-team-def-val">79</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Goalkeeper (GK)</label>
+                <div class="slider-row">
+                    <input type="range" id="custom-team-gk-slider" min="50" max="99" step="1">
+                    <span id="custom-team-gk-val">78</span>
+                </div>
+            </div>
+            <div class="input-group toggle-group">
+                <label for="custom-team-injured">Key player injured</label>
+                <label class="switch">
+                    <input type="checkbox" id="custom-team-injured">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <button type="button" id="save-custom-team-btn" class="btn btn-primary btn-block">Apply changes</button>
+        </div>
+    </div>
+
+    <script src="model-engine.js"></script>
+    <script src="script.js"></script>
+    <script src="backtest.js"></script>
+</body>
+</html>

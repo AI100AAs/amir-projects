@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10251c">
+  <title>Fortune Avenue</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,800;1,800&display=swap');
+    :root {
+      --ink:#10251c; --cream:#f8f2df; --paper:#fffaf0; --green:#d9e8d3;
+      --red:#d64039; --gold:#f5bd45; --muted:#67756d; --line:#10251c24;
+      --shadow:0 22px 70px #10251c2c; --player:#d64039;
+    }
+    * { box-sizing:border-box }
+    body {
+      margin:0; min-height:100vh; color:var(--ink);
+      font-family:"DM Sans",system-ui,sans-serif;
+      background:
+        radial-gradient(circle at 10% 5%,#fff8dc 0 8%,transparent 28%),
+        radial-gradient(circle at 90% 90%,#a9c6a2 0,transparent 34%),
+        #dfe6d7;
+    }
+    button,input,select { font:inherit }
+    button { cursor:pointer }
+    .shell { min-height:100vh; display:grid; grid-template-columns:minmax(670px,1fr) 390px }
+    .board-wrap { min-width:0; display:grid; place-items:center; padding:22px }
+    .board {
+      width:min(calc(100vh - 44px),calc(100vw - 434px)); min-width:620px; aspect-ratio:1;
+      display:grid; grid-template:1.45fr repeat(9,1fr) 1.45fr / 1.45fr repeat(9,1fr) 1.45fr;
+      background:var(--green); border:4px solid var(--ink); border-radius:4px;
+      box-shadow:var(--shadow),inset 0 0 50px #57745118; position:relative; overflow:hidden;
+    }
+    .space {
+      position:relative; display:flex; align-items:center; justify-content:center; text-align:center;
+      padding:4px; border:1px solid #10251c99; background:#fff8; overflow:hidden; user-select:none;
+      transition:.18s ease;
+    }
+    .space.active { background:#fff; box-shadow:inset 0 0 0 3px var(--gold); z-index:2 }
+    .space-body { position:relative; z-index:1; max-width:100% }
+    .space-icon { font-size:clamp(12px,1.15vw,18px); line-height:1 }
+    .space-name { font-size:clamp(6px,.68vw,10px); line-height:1.06; font-weight:800; text-transform:uppercase }
+    .space-price { margin-top:3px; font-size:clamp(6px,.6vw,9px); font-weight:600; opacity:.66 }
+    .strip { position:absolute; background:var(--c) }
+    .bottom .strip { inset:0 0 auto;height:23%;border-bottom:1px solid var(--ink) }
+    .top .strip { inset:auto 0 0;height:23%;border-top:1px solid var(--ink) }
+    .left .strip { inset:0 0 0 auto;width:23%;border-left:1px solid var(--ink) }
+    .right .strip { inset:0 auto 0 0;width:23%;border-right:1px solid var(--ink) }
+    .corner { background:#fff9 }
+    .corner .space-name { font-size:clamp(8px,.85vw,12px) }
+    .owner-pin { position:absolute; width:11px; height:11px; border:2px solid white; border-radius:50%; right:4px; bottom:4px; box-shadow:0 2px 5px #0005; z-index:4 }
+    .houses { position:absolute; z-index:3; display:flex; gap:2px }
+    .bottom .houses { top:2px }.top .houses{bottom:2px}.left .houses{right:2px;flex-direction:column}.right .houses{left:2px;flex-direction:column}
+    .house { width:7px;height:7px;background:#168049;border:1px solid white;border-radius:1px }
+    .hotel { width:11px;height:8px;background:var(--red);border:1px solid white;border-radius:1px }
+    .tokens { position:absolute; inset:24% 3% 3%; display:flex; flex-wrap:wrap; gap:2px; align-items:center; justify-content:center; z-index:6 }
+    .token {
+      width:clamp(14px,1.55vw,21px); height:clamp(14px,1.55vw,21px); display:grid; place-items:center;
+      border-radius:50%; color:white; font-size:9px; font-weight:900; border:2px solid white;
+      box-shadow:0 3px 7px #0006; animation:arrive .28s ease;
+    }
+    @keyframes arrive { from{transform:scale(.5) translateY(-12px)} 70%{transform:scale(1.18)} }
+    .center { grid-area:2/2/11/11; position:relative; display:grid; place-items:center; overflow:hidden }
+    .center:before,.center:after { content:"";position:absolute;border:2px solid #10251c12;inset:14%;transform:rotate(-45deg);border-radius:8px }
+    .center:after { inset:25%;border-style:dashed }
+    .brand { z-index:1;text-align:center;transform:rotate(-45deg);width:72% }
+    .kicker { font-size:clamp(7px,.85vw,12px);letter-spacing:.26em;font-weight:800 }
+    h1 { margin:8px auto 5px; width:max-content; font:italic 800 clamp(28px,4.8vw,67px)/.87 "Playfair Display",Georgia,serif;color:white;background:var(--red);padding:.13em .3em .21em;box-shadow:7px 7px 0 #10251c24 }
+    .tagline { font-size:clamp(7px,.76vw,11px);font-weight:800;letter-spacing:.14em }
+    .dice { margin:18px auto 0;display:flex;gap:9px;justify-content:center }
+    .die { width:clamp(35px,3.8vw,51px);aspect-ratio:1;background:white;border:2px solid var(--ink);border-radius:10px;display:grid;place-items:center;font-size:clamp(23px,2.8vw,36px);box-shadow:4px 5px 0 #10251c25 }
+    .die.rolling { animation:shake .15s linear infinite }
+    @keyframes shake { 50%{transform:rotate(13deg) translateY(-4px)} }
+    .status-pill { margin:13px auto 0;width:max-content;max-width:90%;padding:7px 13px;border-radius:999px;background:#fff9;border:1px solid var(--line);font-size:clamp(7px,.75vw,11px);font-weight:700 }
+    .panel { height:100vh; overflow-y:auto; background:#f9f4e7f2; border-left:1px solid var(--line); padding:22px; box-shadow:-16px 0 40px #10251c12 }
+    .panel-head { display:flex;justify-content:space-between;align-items:center;margin-bottom:17px }
+    .panel-head h2 { margin:0;font:800 26px "Playfair Display",serif }
+    .ghost-btn { border:1px solid var(--line);background:#fff9;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800;color:var(--ink) }
+    .card { background:#ffffffb8;border:1px solid var(--line);border-radius:17px;padding:14px;margin-bottom:11px;box-shadow:0 8px 20px #10251c0b }
+    .turn-card { border:2px solid var(--player) }
+    .eyebrow { font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--muted) }
+    .turn-row { display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:5px 0 2px }
+    .turn-name { font:800 26px "Playfair Display",serif;display:flex;align-items:center;gap:8px }
+    .dot { width:13px;height:13px;border-radius:50%;background:var(--player) }
+    .cash { font-size:20px;color:#247044;font-weight:800 }
+    .instruction { min-height:34px;margin:9px 0 11px;color:var(--muted);font-size:12px;line-height:1.4 }
+    .actions { display:grid;grid-template-columns:1fr 1fr;gap:8px }
+    .btn { border:0;border-radius:10px;padding:11px 7px;color:white;background:var(--ink);font-weight:800;box-shadow:0 4px 0 #0003;transition:.15s ease }
+    .btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.07)}
+    .btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #0003}
+    .btn:disabled{opacity:.25;cursor:not-allowed;box-shadow:none}
+    .btn.buy{background:#247044}.btn.build{background:#b57a16}.btn.end{background:var(--red)}
+    .property-card { display:none;position:relative;overflow:hidden }
+    .property-card.show{display:block}
+    .property-band { height:11px;margin:-14px -14px 12px;background:var(--property-color,#777) }
+    .property-head{display:flex;align-items:start;justify-content:space-between;gap:10px}
+    .property-head strong{font:800 18px "Playfair Display",serif}
+    .badge{font-size:9px;font-weight:800;text-transform:uppercase;border-radius:999px;padding:4px 7px;background:#10251c0d}
+    .property-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:11px}
+    .stat{background:#10251c08;border-radius:8px;padding:7px;text-align:center}
+    .stat span,.stat strong{display:block}.stat span{font-size:8px;text-transform:uppercase;color:var(--muted);font-weight:800}.stat strong{font-size:12px;margin-top:2px}
+    .section-title{margin:0 0 6px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+    .player { display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line) }
+    .player:last-child{border:0}.player.out{opacity:.35;text-decoration:line-through}
+    .player-token{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:white;font-size:11px;font-weight:900}
+    .player strong,.player small{display:block}.player small{font-size:10px;color:var(--muted);margin-top:1px}.player-money{font-size:12px;font-weight:800}
+    .log{max-height:165px;overflow-y:auto}.log-line{font-size:11px;line-height:1.4;padding:6px 0;border-bottom:1px solid var(--line)}.log-line:first-child{font-weight:800;color:var(--ink)}
+    .setup-screen,.modal { position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:#10251cd9;backdrop-filter:blur(9px) }
+    .setup { width:min(510px,100%);background:var(--cream);border:2px solid #fff5;border-radius:25px;padding:29px;box-shadow:0 35px 100px #0008 }
+    .setup .logo-mark{width:50px;height:50px;display:grid;place-items:center;background:var(--red);color:white;font:italic 800 28px "Playfair Display";transform:rotate(-6deg);box-shadow:4px 4px 0 #10251c25}
+    .setup h2{margin:13px 0 4px;font:800 39px "Playfair Display",serif}.setup>p{margin:0 0 20px;color:var(--muted)}
+    .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.setup label{display:block;margin:12px 0 5px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:var(--muted)}
+    .setup input,.setup select{width:100%;border:1px solid #10251c35;border-radius:9px;background:white;padding:11px 12px;color:var(--ink)}
+    .setup .start{width:100%;margin-top:19px;padding:14px;background:var(--red)}
+    .resume-row{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.resume-row.show{display:grid}.resume-row .btn{background:#50645a}
+    .modal{display:none;z-index:30}.modal.show{display:grid}
+    .modal-box{width:min(420px,100%);text-align:center;background:var(--cream);border-radius:22px;padding:27px;box-shadow:var(--shadow)}.modal-icon{font-size:42px}.modal h3{font:800 29px "Playfair Display",serif;margin:7px 0}.modal p{color:var(--muted);line-height:1.5;margin:0 0 18px}
+    .toast{position:fixed;left:50%;bottom:25px;z-index:40;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:white;border-radius:999px;padding:10px 16px;font-size:12px;font-weight:700;transition:.25s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1050px){.shell{grid-template-columns:1fr}.board-wrap{overflow:auto;justify-content:start}.board{width:min(94vw,760px);min-width:620px}.panel{height:auto;border-left:0;border-top:1px solid var(--line)}}
+    @media(max-width:650px){.board-wrap{padding:8px}.board{width:620px}.panel{padding:15px}.setup-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="board-wrap"><div class="board" id="board" aria-label="Fortune Avenue game board"></div></section>
+    <aside class="panel">
+      <header class="panel-head"><h2>Game Desk</h2><button class="ghost-btn" id="newGame">New game</button></header>
+      <section class="card turn-card" id="turnCard">
+        <div class="eyebrow">Current turn</div>
+        <div class="turn-row"><div class="turn-name"><span class="dot"></span><span id="turnName">Player 1</span></div><div class="cash" id="turnCash">$1,500</div></div>
+        <div class="instruction" id="instruction">Roll the dice to begin your turn.</div>
+        <div class="actions">
+          <button class="btn" id="rollBtn">Roll dice</button>
+          <button class="btn buy" id="buyBtn" disabled>Buy property</button>
+          <button class="btn build" id="buildBtn" disabled>Build house</button>
+          <button class="btn end" id="endBtn" disabled>End turn</button>
+        </div>
+      </section>
+      <section class="card property-card" id="propertyCard">
+        <div class="property-band"></div>
+        <div class="property-head"><strong id="propertyName"></strong><span class="badge" id="propertyOwner"></span></div>
+        <div class="property-stats">
+          <div class="stat"><span>Price</span><strong id="propertyPrice"></strong></div>
+          <div class="stat"><span>Rent</span><strong id="propertyRent"></strong></div>
+          <div class="stat"><span>Buildings</span><strong id="propertyHouses"></strong></div>
+        </div>
+      </section>
+      <section class="card"><h3 class="section-title">Players</h3><div id="players"></div></section>
+      <section class="card"><h3 class="section-title">Recent activity</h3><div class="log" id="log"></div></section>
+      <section class="card"><h3 class="section-title">How to win</h3><div style="font-size:11px;line-height:1.5;color:var(--muted)">Buy streets, complete color sets, then build houses to raise rent. Pass GO for $200. The last player with money wins.</div></section>
+    </aside>
+  </main>
+
+  <div class="setup-screen" id="setupScreen">
+    <form class="setup" id="setupForm">
+      <div class="logo-mark">F</div><h2>Fortune Avenue</h2><p>Build an empire. Break the bank.</p>
+      <label for="playerCount">Players</label>
+      <select id="playerCount"><option value="2">2 players</option><option value="3">3 players</option><option value="4">4 players</option></select>
+      <label>Player names</label><div class="setup-grid" id="nameFields"></div>
+      <button class="btn start" type="submit">Start new game</button>
+      <div class="resume-row" id="resumeRow"><button class="btn" type="button" id="resumeBtn">Resume saved game</button><button class="btn" type="button" id="clearSave">Delete save</button></div>
+    </form>
+  </div>
+  <div class="modal" id="modal"><div class="modal-box"><div class="modal-icon" id="modalIcon">★</div><h3 id="modalTitle"></h3><p id="modalText"></p><button class="btn" id="modalClose">Continue</button></div></div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const COLORS=["#dc423b","#3478c8","#d99b23","#7554bd"], TOKENS=["A","B","C","D"], DICE="⚀⚁⚂⚃⚄⚅";
+    const GROUPS={brown:[1,3],sky:[6,8,9],pink:[11,13,14],orange:[16,18,19],red:[21,23,24],yellow:[26,27,29],green:[31,32,34],blue:[37,39]};
+    const boardData=[
+      ["GO","go"],["Old Mill Road","property",60,8,"#80553f","brown"],["Community Chest","community"],["Birch Lane","property",60,10,"#80553f","brown"],["Income Tax","tax",100],
+      ["North Terminal","rail",200,25],["Skyway Avenue","property",100,14,"#73c6df","sky"],["Chance","chance"],["Harbor Walk","property",100,14,"#73c6df","sky"],["Cloud Street","property",120,18,"#73c6df","sky"],
+      ["Jail / Visiting","jail"],["Orchid Avenue","property",140,22,"#d26da3","pink"],["Power Company","utility",150,0],["Rose Boulevard","property",140,22,"#d26da3","pink"],["Regent Road","property",160,26,"#d26da3","pink"],
+      ["East Terminal","rail",200,25],["Amber Street","property",180,30,"#e78a41","orange"],["Community Chest","community"],["Citrus Road","property",180,30,"#e78a41","orange"],["Sunset Avenue","property",200,34,"#e78a41","orange"],
+      ["Free Parking","parking"],["Crimson Way","property",220,38,"#cf413b","red"],["Chance","chance"],["Ruby Street","property",220,38,"#cf413b","red"],["Festival Avenue","property",240,42,"#cf413b","red"],
+      ["South Terminal","rail",200,25],["Golden Road","property",260,46,"#e6c532","yellow"],["Marigold Street","property",260,46,"#e6c532","yellow"],["Water Company","utility",150,0],["Market Avenue","property",280,50,"#e6c532","yellow"],
+      ["Go To Jail","gotojail"],["Emerald Drive","property",300,55,"#3c9a63","green"],["Pine Avenue","property",300,55,"#3c9a63","green"],["Community Chest","community"],["Garden Boulevard","property",320,60,"#3c9a63","green"],
+      ["West Terminal","rail",200,25],["Chance","chance"],["Midnight Road","property",350,70,"#4168aa","blue"],["Luxury Tax","tax",150],["Crown Avenue","property",400,85,"#4168aa","blue"]
+    ].map((x,i)=>({i,name:x[0],type:x[1],price:x[2],baseRent:x[3],color:x[4],group:x[5],owner:null,houses:0}));
+    const cards={
+      chance:[["Your side business booms. Collect $150.",150],["Repair bill. Pay $80.",-80],["Advance to GO. Collect $200.","go"],["Go directly to Jail.","jail"],["Market rally. Collect $100.",100],["Speeding fine. Pay $40.",-40]],
+      community:[["Tax refund. Collect $100.",100],["Clinic fee. Pay $50.",-50],["Birthday gift. Collect $60.",60],["School fund. Pay $70.",-70],["City award. Collect $120.",120],["Go directly to Jail.","jail"]]
+    };
+    let game=null, modalCallback=null, toastTimer;
+    const $=id=>document.getElementById(id), cash=n=>"$"+Math.max(0,n).toLocaleString();
+    function grid(i){if(i===0)return[11,11];if(i<10)return[11,11-i];if(i===10)return[11,1];if(i<20)return[21-i,1];if(i===20)return[1,1];if(i<30)return[1,i-19];if(i===30)return[1,11];return[i-29,11]}
+    function side(i){return[0,10,20,30].includes(i)?"corner":i<10?"bottom":i<20?"left":i<30?"top":"right"}
+    function icon(s){return({go:"➜",chance:"?",community:"◇",tax:"$",rail:"◆",utility:"⚙",jail:"▣",gotojail:"⇢",parking:"P"})[s.type]||""}
+    function buildBoard(){
+      $("board").innerHTML='<div class="center"><div class="brand"><div class="kicker">BUY • BUILD • BANKRUPT</div><h1>Fortune<br>Avenue</h1><div class="tagline">EVERY MOVE CHANGES YOUR FORTUNE</div><div class="dice"><div class="die" id="die1">⚀</div><div class="die" id="die2">⚀</div></div><div class="status-pill" id="boardStatus">Start a game to make your fortune.</div></div></div>';
+      boardData.forEach(s=>{const [r,c]=grid(s.i),el=document.createElement("div");el.className=`space ${side(s.i)}`;el.dataset.index=s.i;el.style.gridRow=r;el.style.gridColumn=c;
+        el.innerHTML=`${s.color?`<div class="strip" style="--c:${s.color}"></div>`:""}<div class="space-body"><div class="space-icon">${icon(s)}</div><div class="space-name">${s.name}</div>${s.price?`<div class="space-price">${cash(s.price)}</div>`:""}</div><div class="houses"></div><div class="tokens"></div>`;$("board").appendChild(el)});
+    }
+    function current(){return game.players[game.turn]}
+    function ownsSet(p,group){return GROUPS[group]?.every(i=>boardData[i].owner===game.turn)}
+    function rentFor(s,dice=0){if(s.type==="rail")return 25*Math.pow(2,currentOwner(s).properties.filter(i=>boardData[i].type==="rail").length-1);if(s.type==="utility")return dice*(currentOwner(s).properties.filter(i=>boardData[i].type==="utility").length===2?10:4);return s.baseRent*Math.pow(2,s.houses)}
+    function currentOwner(s){return game.players[s.owner]}
+    function log(text){game.log.unshift(text);game.log=game.log.slice(0,35)}
+    function save(){if(game){localStorage.setItem("fortuneAvenueSave",JSON.stringify({game,spaces:boardData.map(s=>({owner:s.owner,houses:s.houses}))}));updateResume()}}
+    function load(){try{const d=JSON.parse(localStorage.getItem("fortuneAvenueSave"));if(!d)return false;game=d.game;d.spaces.forEach((x,i)=>Object.assign(boardData[i],x));$("setupScreen").style.display="none";render();return true}catch{return false}}
+    function updateResume(){$("resumeRow").classList.toggle("show",!!localStorage.getItem("fortuneAvenueSave"))}
+    function toast(text){clearTimeout(toastTimer);$("toast").textContent=text;$("toast").classList.add("show");toastTimer=setTimeout(()=>$("toast").classList.remove("show"),1800)}
+    function showModal(icon,title,text,cb=null){$("modalIcon").textContent=icon;$("modalTitle").textContent=title;$("modalText").textContent=text;modalCallback=cb;$("modal").classList.add("show")}
+    function closeModal(){$("modal").classList.remove("show");const cb=modalCallback;modalCallback=null;if(cb)cb()}
+    function render(){
+      if(!game)return;document.querySelectorAll(".tokens").forEach(x=>x.innerHTML="");document.querySelectorAll(".owner-pin").forEach(x=>x.remove());document.querySelectorAll(".space").forEach(x=>x.classList.remove("active"));
+      game.players.forEach(p=>{if(p.bankrupt)return;const t=document.createElement("span");t.className="token";t.style.background=p.color;t.textContent=p.token;document.querySelector(`[data-index="${p.pos}"] .tokens`).appendChild(t)});
+      boardData.forEach(s=>{const el=document.querySelector(`[data-index="${s.i}"]`),hs=el.querySelector(".houses");hs.innerHTML=s.houses===5?'<i class="hotel"></i>':Array.from({length:s.houses},()=>'<i class="house"></i>').join("");if(s.owner!==null){const pin=document.createElement("span");pin.className="owner-pin";pin.style.background=game.players[s.owner].color;el.appendChild(pin)}});
+      const p=current(),s=boardData[p.pos];document.querySelector(`[data-index="${p.pos}"]`).classList.add("active");$("turnCard").style.setProperty("--player",p.color);$("turnName").textContent=p.name;$("turnCash").textContent=cash(p.money);
+      const canBuy=game.phase==="action"&&s.price&&s.owner===null&&p.money>=s.price, canBuild=game.phase==="action"&&s.type==="property"&&s.owner===game.turn&&ownsSet(p,s.group)&&s.houses<5&&p.money>=Math.ceil(s.price/2);
+      $("rollBtn").disabled=game.phase!=="roll";$("buyBtn").disabled=!canBuy;$("buildBtn").disabled=!canBuild;$("endBtn").disabled=game.phase!=="action";
+      $("instruction").textContent=game.phase==="roll"?(p.inJail?"Roll doubles to escape, or wait three turns.":"Roll the dice to begin your turn."):game.phase==="moving"?"Moving around the board…":canBuy?`${s.name} is unowned. Buy it for ${cash(s.price)}?`:canBuild?`You own this complete color set. Build for ${cash(Math.ceil(s.price/2))}.`:"Review the result, then end your turn.";
+      $("boardStatus").textContent=`${p.name} • ${game.phase==="roll"?"ready to roll":game.phase==="moving"?"on the move":`landed on ${s.name}`}`;
+      $("players").innerHTML=game.players.map((x,i)=>`<div class="player ${x.bankrupt?"out":""}"><div class="player-token" style="background:${x.color}">${x.token}</div><div><strong>${x.name}${i===game.turn?" •":""}</strong><small>${x.properties.length} deeds${x.inJail?" • In jail":""}</small></div><div class="player-money">${cash(x.money)}</div></div>`).join("");
+      $("log").innerHTML=game.log.map(x=>`<div class="log-line">${x}</div>`).join("");
+      if(s.price){$("propertyCard").classList.add("show");$("propertyCard").style.setProperty("--property-color",s.color||"#50645a");$("propertyName").textContent=s.name;$("propertyOwner").textContent=s.owner===null?"Unowned":`Owned by ${game.players[s.owner].name}`;$("propertyPrice").textContent=cash(s.price);$("propertyRent").textContent=cash(s.type==="property"?rentFor(s):s.baseRent||0);$("propertyHouses").textContent=s.type==="property"?(s.houses===5?"Hotel":s.houses||"None"):"—"}else $("propertyCard").classList.remove("show");
+      save();
+    }
+    function pay(p,amount,to=null,reason="the bank"){p.money-=amount;if(to)to.money+=amount;log(`${p.name} paid ${cash(amount)} to ${to?to.name:reason}.`);if(p.money<0)bankrupt(p,to)}
+    function bankrupt(p,creditor){p.bankrupt=true;p.money=0;p.properties.forEach(i=>{boardData[i].owner=creditor?game.players.indexOf(creditor):null;boardData[i].houses=0;if(creditor)creditor.properties.push(i)});p.properties=[];log(`${p.name} went bankrupt.`);const alive=game.players.filter(x=>!x.bankrupt);if(alive.length===1)showModal("★",`${alive[0].name} wins!`,`They finish with ${cash(alive[0].money)} and ${alive[0].properties.length} deeds.`,()=>{$("setupScreen").style.display="grid"})}
+    function sendToJail(p){p.pos=10;p.inJail=true;p.jailTurns=0;game.doubles=0;log(`${p.name} was sent to Jail.`)}
+    function draw(type){const p=current(),card=cards[type][Math.floor(Math.random()*cards[type].length)],effect=card[1];if(effect==="go"){p.pos=0;p.money+=200}else if(effect==="jail")sendToJail(p);else if(effect>0)p.money+=effect;else pay(p,-effect,null,"the bank");log(`${type==="chance"?"Chance":"Community Chest"}: ${card[0]}`);showModal(type==="chance"?"?":"◇",type==="chance"?"Chance":"Community Chest",card[0])}
+    function resolve(total){const p=current(),s=boardData[p.pos];if(s.type==="gotojail"){sendToJail(p);showModal("▣","Go to Jail","Go directly to Jail. Do not collect $200.")}else if(s.type==="chance"||s.type==="community")draw(s.type);else if(s.type==="tax")pay(p,s.price,null,s.name);else if(s.owner!==null&&s.owner!==game.turn){const due=rentFor(s,total);pay(p,due,currentOwner(s));if(!p.bankrupt)showModal("⌂","Rent due",`${currentOwner(s).name} owns ${s.name}. You paid ${cash(due)}.`)}else if(s.price&&s.owner===null)log(`${s.name} is available for ${cash(s.price)}.`);else log(`${p.name} landed on ${s.name}.`);game.phase="action";render()}
+    async function move(p,steps){for(let n=0;n<steps;n++){const old=p.pos;p.pos=(p.pos+1)%40;if(p.pos<old){p.money+=200;log(`${p.name} passed GO and collected $200.`)}render();await new Promise(r=>setTimeout(r,95))}}
+    function roll(){
+      if(game.phase!=="roll")return;const p=current(),d1=1+Math.floor(Math.random()*6),d2=1+Math.floor(Math.random()*6),isDouble=d1===d2;game.phase="moving";["die1","die2"].forEach(id=>$(id).classList.add("rolling"));render();
+      setTimeout(async()=>{["die1","die2"].forEach(id=>$(id).classList.remove("rolling"));$("die1").textContent=DICE[d1-1];$("die2").textContent=DICE[d2-1];
+        if(p.inJail){p.jailTurns++;if(isDouble){p.inJail=false;p.jailTurns=0;log(`${p.name} rolled doubles and escaped Jail!`)}else if(p.jailTurns>=3){pay(p,50,null,"the bank");p.inJail=false;p.jailTurns=0;log(`${p.name} paid $50 to leave Jail.`)}else{log(`${p.name} did not roll doubles and stays in Jail.`);game.phase="action";render();return}}
+        if(isDouble){game.doubles++;log(`${p.name} rolled double ${d1}s.`)}else game.doubles=0;game.lastRollDouble=isDouble;if(game.doubles===3){sendToJail(p);game.lastRollDouble=false;game.phase="action";showModal("▣","Three doubles!","Too much luck sends you directly to Jail.");render();return}
+        log(`${p.name} rolled ${d1} + ${d2}.`);await move(p,d1+d2);resolve(d1+d2);
+      },520)}
+    function buy(){const p=current(),s=boardData[p.pos];if(game.phase!=="action"||!s.price||s.owner!==null||p.money<s.price)return;p.money-=s.price;s.owner=game.turn;p.properties.push(s.i);log(`${p.name} bought ${s.name} for ${cash(s.price)}.`);toast("Property purchased");render()}
+    function build(){const p=current(),s=boardData[p.pos],cost=Math.ceil(s.price/2);if(game.phase!=="action"||s.owner!==game.turn||!ownsSet(p,s.group)||s.houses>=5||p.money<cost)return;p.money-=cost;s.houses++;log(`${p.name} built ${s.houses===5?"a hotel":"a house"} on ${s.name}.`);toast(s.houses===5?"Hotel built":"House built");render()}
+    function endTurn(){if(game.phase!=="action")return;const p=current();if(game.lastRollDouble&&!p.inJail){game.phase="roll";game.lastRollDouble=false;log(`${p.name} earned another roll.`)}else{let n=game.turn;do n=(n+1)%game.players.length;while(game.players[n].bankrupt);game.turn=n;game.phase="roll";game.doubles=0;log(`${current().name}'s turn begins.`)}render()}
+    function start(names){boardData.forEach(s=>{s.owner=null;s.houses=0});game={players:names.map((name,i)=>({name:name||`Player ${i+1}`,color:COLORS[i],token:TOKENS[i],money:1500,pos:0,properties:[],inJail:false,jailTurns:0,bankrupt:false})),turn:0,phase:"roll",doubles:0,lastRollDouble:false,log:["Welcome to Fortune Avenue. Roll the dice!"]};$("setupScreen").style.display="none";render()}
+    function nameFields(){const n=+$("playerCount").value,old=[...document.querySelectorAll(".player-name")].map(x=>x.value);$("nameFields").innerHTML=Array.from({length:n},(_,i)=>`<input class="player-name" maxlength="14" aria-label="Player ${i+1} name" value="${old[i]||`Player ${i+1}`}">`).join("")}
+    $("playerCount").onchange=nameFields;$("setupForm").onsubmit=e=>{e.preventDefault();start([...document.querySelectorAll(".player-name")].map(x=>x.value.trim()))};$("rollBtn").onclick=roll;$("buyBtn").onclick=buy;$("buildBtn").onclick=build;$("endBtn").onclick=endTurn;$("modalClose").onclick=closeModal;$("newGame").onclick=()=>$("setupScreen").style.display="grid";$("resumeBtn").onclick=load;$("clearSave").onclick=()=>{localStorage.removeItem("fortuneAvenueSave");updateResume();toast("Saved game deleted")};
+    buildBoard();nameFields();updateResume();
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "ai-coach",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "setup:assets": "node scripts/fetch-assets.mjs",
+    "postinstall": "node scripts/fetch-assets.mjs",
+    "dev": "vite",
+    "dev:lan": "HTTPS=1 vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview",
+    "serve:lan": "HTTPS=1 vite preview"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.18",
+    "kokoro-js": "^1.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:openrouter.ai)",
+      "Bash(npm install *)",
+      "Bash(curl -s -X POST http://localhost:8000/api/scan -F file=@/Users/ahda/Desktop/fridge/backend/uploads/__CMDSUB_OUTPUT__)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -v -X POST http://localhost:8000/api/scan -F \"file=@/tmp/test_fridge.jpg\")",
+      "Bash(curl -s http://127.0.0.1:1234/v1/models)",
+      "Bash(python3 -m json.tool)"
+    ]
+  }
+}

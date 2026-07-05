@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Dialect is an AI-assisted code language translator with implementation notes and behavioral verification."
+    />
+    <meta name="theme-color" content="#17211d" />
+    <title>Dialect | Code Language Translator</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Dialect home">
+        <span class="brand-mark">&lt;/&gt;</span>
+        <span>dialect</span>
+      </a>
+      <nav class="topnav" aria-label="Primary navigation">
+        <button class="nav-item active">Workspace</button>
+        <button class="nav-item" data-panel-trigger="tests">Test suite</button>
+        <button class="nav-item" data-panel-trigger="review">Review</button>
+      </nav>
+      <div class="header-actions">
+        <span class="api-state" id="apiState"><i></i><span>Connecting</span></span>
+        <button class="header-icon" id="historyButton" title="Translation history">History</button>
+        <button class="header-icon" id="themeButton" title="Toggle theme" aria-label="Toggle theme">◐</button>
+        <button class="ghost-button" id="newButton">New workspace</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">AI CODE MIGRATION STUDIO / V1.0</p>
+          <h1>Move the logic.<br /><em>Keep the meaning.</em></h1>
+        </div>
+        <div class="hero-copy">
+          <p>
+            Translate code without hiding the language decisions. Every output
+            comes with implementation notes, risk signals, and a verification trail.
+          </p>
+          <div class="trust-note">
+            <span class="trust-icon">!</span>
+            <span>Generated code is a draft until its tests pass.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="status-grid" aria-label="Workspace status">
+        <article class="status-card">
+          <span class="status-icon">01</span>
+          <div><small>ENGINE</small><strong id="engineStatus">Checking…</strong></div>
+        </article>
+        <article class="status-card">
+          <span class="status-icon">02</span>
+          <div><small>COMPILER</small><strong id="compilerStatus">Checking…</strong></div>
+        </article>
+        <article class="status-card">
+          <span class="status-icon">03</span>
+          <div><small>REVIEW SCORE</small><strong id="scoreStatus">Not analyzed</strong></div>
+        </article>
+        <article class="status-card">
+          <span class="status-icon">04</span>
+          <div><small>WORKSPACE</small><strong id="saveStatus">Saved locally</strong></div>
+        </article>
+      </section>
+
+      <section class="workspace-shell">
+        <div class="language-bar">
+          <label class="language-select">
+            <span>SOURCE</span>
+            <select id="sourceLanguage">
+              <option value="python">Python 3.12</option>
+              <option value="javascript">JavaScript</option>
+              <option value="java">Java</option>
+              <option value="cpp">C++ 20</option>
+              <option value="rust">Rust</option>
+            </select>
+          </label>
+          <button class="swap-button" id="swapButton" title="Swap languages" aria-label="Swap languages">
+            <span>→</span><span>←</span>
+          </button>
+          <label class="language-select">
+            <span>TARGET</span>
+            <select id="targetLanguage">
+              <option value="cpp">C++ 20</option>
+              <option value="rust">Rust</option>
+              <option value="python">Python 3.12</option>
+              <option value="javascript">JavaScript</option>
+              <option value="java">Java</option>
+            </select>
+          </label>
+          <div class="translation-actions">
+            <label class="subtle-button import-button" for="fileInput">Import file</label>
+            <input id="fileInput" type="file" accept=".py,.js,.java,.cpp,.cc,.cxx,.rs,.txt" hidden />
+            <select class="example-select" id="exampleSelect" aria-label="Choose example">
+              <option value="0">Example: Two sum</option>
+              <option value="1">Example: Fibonacci</option>
+              <option value="2">Example: Word count</option>
+            </select>
+            <button class="translate-button" id="translateButton">
+              <span>Translate</span>
+              <kbd>⌘ ↵</kbd>
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-grid">
+          <article class="editor-pane">
+            <div class="file-tab">
+              <span class="python-dot"></span>
+              <span id="sourceFilename">solution.py</span>
+              <span class="modified-dot">●</span>
+              <button class="icon-button tab-action" id="clearButton">Clear</button>
+            </div>
+            <div class="code-editor">
+              <div class="line-numbers" id="sourceLines"></div>
+              <pre class="highlight-layer" id="sourceHighlight" aria-hidden="true"></pre>
+              <textarea
+                id="sourceEditor"
+                aria-label="Source code editor"
+                spellcheck="false"
+                autocomplete="off"
+              ></textarea>
+            </div>
+            <footer class="editor-footer">
+              <span id="sourceStats">0 lines · 0 chars</span>
+              <span>Spaces: 4</span>
+            </footer>
+          </article>
+
+          <article class="editor-pane target-pane">
+            <div class="file-tab">
+              <span class="cpp-dot"></span>
+              <span id="targetFilename">solution.cpp</span>
+              <span class="generated-label">AI GENERATED</span>
+              <span class="edited-label" id="editedLabel" hidden>EDITED</span>
+              <button class="icon-button" id="editButton" title="Edit translated code">Edit</button>
+              <button class="icon-button" id="copyButton" title="Copy translated code">Copy</button>
+              <button class="icon-button" id="downloadButton" title="Download translated code">Download</button>
+            </div>
+            <div class="code-editor">
+              <div class="line-numbers" id="targetLines"></div>
+              <pre class="highlight-layer" id="targetHighlight" aria-hidden="true"></pre>
+              <textarea
+                id="targetEditor"
+                aria-label="Translated code editor"
+                spellcheck="false"
+                autocomplete="off"
+                readonly
+              ></textarea>
+              <div class="empty-output" id="emptyOutput">
+                <div class="empty-glyph">{ }</div>
+                <p>Your translation will appear here.</p>
+                <span>Use ⌘ ↵ to begin</span>
+              </div>
+              <div class="loading-output" id="loadingOutput" hidden>
+                <div class="scan-line"></div>
+                <span>Mapping types and control flow…</span>
+              </div>
+            </div>
+            <footer class="editor-footer">
+              <span id="targetStats">Waiting for translation</span>
+              <span id="engineLabel">Local demo</span>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <section class="analysis-grid" id="analysisSection">
+        <article class="analysis-card changes-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">IMPLEMENTATION NOTES</p>
+              <h2>What changed, and why</h2>
+            </div>
+            <span class="change-count" id="changeCount">0 changes</span>
+          </div>
+          <div class="changes-list" id="changesList">
+            <div class="blank-state">
+              Translate a snippet to see language-specific decisions.
+            </div>
+          </div>
+        </article>
+
+        <article class="analysis-card verification-card" id="tests">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">BEHAVIORAL CHECK</p>
+              <h2>Trust, but verify</h2>
+            </div>
+            <span class="status-pill pending" id="verificationPill">NOT RUN</span>
+          </div>
+          <p class="card-intro">
+            Test cases compare expected behavior, not just whether the code compiles.
+          </p>
+          <div class="test-table" id="testTable">
+            <div class="test-row test-header">
+              <span>INPUT</span><span>EXPECTED</span><span>STATUS</span>
+            </div>
+            <div class="test-row muted-row">
+              <span>—</span><span>—</span><span>Waiting</span>
+            </div>
+          </div>
+          <button class="run-tests-button" id="runTestsButton" disabled>
+            <span>▶</span> Run behavioral checks
+          </button>
+          <p class="test-disclaimer" id="testDisclaimer">
+            Demo checks validate the included example contract.
+          </p>
+        </article>
+      </section>
+
+      <section class="review-grid" id="review">
+        <article class="analysis-card quality-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">TRANSLATION REVIEW</p>
+              <h2>Quality signals</h2>
+            </div>
+            <div class="score-ring" id="scoreRing"><strong>—</strong><span>/100</span></div>
+          </div>
+          <div class="metric-grid">
+            <div><small>SOURCE</small><strong id="sourceLineMetric">—</strong><span>lines</span></div>
+            <div><small>TARGET</small><strong id="targetLineMetric">—</strong><span>lines</span></div>
+            <div><small>DELTA</small><strong id="lineDeltaMetric">—</strong><span>lines</span></div>
+            <div><small>BRANCHES</small><strong id="branchMetric">—</strong><span>found</span></div>
+          </div>
+          <div class="review-summary" id="reviewSummary">
+            Translate code to generate a static review of language-boundary risks.
+          </div>
+        </article>
+
+        <article class="analysis-card findings-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">AUTOMATED FLAGS</p>
+              <h2>Review before shipping</h2>
+            </div>
+            <span class="status-pill pending" id="riskPill">WAITING</span>
+          </div>
+          <div class="finding-list" id="findingList">
+            <div class="blank-state">No analysis yet.</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="lower-grid">
+        <article class="chat-card">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">TRANSLATOR CHAT</p>
+              <h2>Question the output <span class="model-chip">GEMMA</span></h2>
+            </div>
+            <span class="chat-pulse"></span>
+          </div>
+          <div class="chat-log" id="chatLog">
+            <div class="message assistant-message">
+              <span class="avatar">D</span>
+              <p>
+                I use the active model with your source, translation, notes,
+                assumptions, and risk analysis as context.
+              </p>
+            </div>
+          </div>
+          <form class="chat-form" id="chatForm">
+            <input
+              id="chatInput"
+              type="text"
+              placeholder="Why use long long here?"
+              autocomplete="off"
+            />
+            <button type="submit" aria-label="Send message">↑</button>
+          </form>
+          <div class="suggestion-row">
+            <button data-question="What are the biggest risks?">Biggest risks</button>
+            <button data-question="What tests should I add?">Suggest tests</button>
+            <button data-question="Explain the type choices.">Explain types</button>
+          </div>
+        </article>
+
+        <article class="risk-card" id="risks">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">RESPONSIBLE USE</p>
+              <h2>Known fault lines</h2>
+            </div>
+          </div>
+          <div class="risk-list">
+            <button class="risk-item active">
+              <span>01</span>
+              <div><strong>Silent semantic bugs</strong><small>Runs ≠ correct</small></div>
+              <b>Reliability</b>
+            </button>
+            <button class="risk-item">
+              <span>02</span>
+              <div><strong>Skill atrophy</strong><small>Translation ≠ fluency</small></div>
+              <b>Education</b>
+            </button>
+            <button class="risk-item">
+              <span>03</span>
+              <div><strong>Poisoned examples</strong><small>Review unfamiliar output</small></div>
+              <b>Security</b>
+            </button>
+            <button class="risk-item">
+              <span>04</span>
+              <div><strong>Unclear provenance</strong><small>Check licenses and attribution</small></div>
+              <b>Copyright</b>
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <section class="future-strip">
+        <p class="eyebrow">THE LONG VIEW</p>
+        <p>
+          If AI eventually translates intent directly into machine code,
+          <strong>legibility becomes a safety feature</strong>, not a luxury.
+          Responsibility still needs a human address.
+        </p>
+      </section>
+    </main>
+
+    <aside class="drawer" id="historyDrawer" aria-hidden="true">
+      <div class="drawer-backdrop" data-close-drawer></div>
+      <div class="drawer-panel">
+        <div class="drawer-header">
+          <div>
+            <p class="eyebrow">LOCAL WORKSPACE</p>
+            <h2>Translation history</h2>
+          </div>
+          <button class="drawer-close" data-close-drawer aria-label="Close history">×</button>
+        </div>
+        <p class="drawer-copy">Snapshots stay in this browser and never leave your machine.</p>
+        <div class="history-list" id="historyList"></div>
+        <button class="danger-button" id="clearHistoryButton">Clear all history</button>
+      </div>
+    </aside>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELI5 News Database</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo">ELI5</div>
+                <div class="brand-text">News DB</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="list" title="Articles (1)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>Articles</span>
+                    <span class="nav-badge" id="article-count">0</span>
+                </button>
+                <button class="nav-item" data-view="graph" title="Graph (G)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    <span>Graph</span>
+                </button>
+                <button class="nav-item" data-view="timeline" title="Timeline (T)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Timeline</span>
+                </button>
+                <button class="nav-item" data-view="dashboard" title="Dashboard (D)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="ethics" title="Ethics (E)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Ethics Guide</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode (Shift+D)">
+                    <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <span class="theme-label">Dark</span>
+                </button>
+                <div class="api-status" id="api-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Checking...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <h1 class="page-title" id="page-title">Articles</h1>
+                <div class="top-actions">
+                    <button class="btn-ghost" id="btn-import" title="Import JSON">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Import
+                    </button>
+                    <button class="btn-ghost" id="btn-export" title="Export JSON">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Export
+                    </button>
+                    <button class="btn-primary" id="btn-add" title="Add article (N)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Article
+                    </button>
+                </div>
+            </header>
+
+            <!-- Views -->
+            <div class="views">
+                <!-- List View -->
+                <div class="view active" id="view-list">
+                    <div class="toolbar">
+                        <div class="search-box">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="search-filter" placeholder="Search articles, topics, summaries..." autocomplete="off">
+                        </div>
+                        <select id="topic-filter" class="select-filter">
+                            <option value="">All Topics</option>
+                        </select>
+                        <select id="sort-filter" class="select-filter">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="confidence">Highest Confidence</option>
+                            <option value="modification">Most Modified</option>
+                        </select>
+                    </div>
+                    <div id="articles-list" class="articles-grid"></div>
+                    <div id="list-empty" class="empty-state hidden">
+                        <div class="empty-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                        <p>No articles yet. Add your first article to get started.</p>
+                        <button class="btn-primary btn-sm" onclick="openAddModal()">Add Article</button>
+                    </div>
+                </div>
+
+                <!-- Graph View -->
+                <div class="view" id="view-graph">
+                    <div class="graph-container">
+                        <div class="graph-legend">
+                            <div class="legend-item"><span class="legend-dot update"></span> Update</div>
+                            <div class="legend-item"><span class="legend-dot contradiction"></span> Contradiction</div>
+                            <div class="legend-item"><span class="legend-dot related"></span> Related</div>
+                            <div class="legend-item"><span class="legend-dot semantic"></span> Semantic</div>
+                        </div>
+                        <svg id="graph-svg" width="100%" height="100%"></svg>
+                        <div class="graph-info" id="graph-info">Click a node to view article details</div>
+                    </div>
+                </div>
+
+                <!-- Timeline View -->
+                <div class="view" id="view-timeline">
+                    <div class="timeline-container" id="timeline-container">
+                        <div class="empty-state">
+                            <p>Timeline will appear here once you add articles.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard View -->
+                <div class="view" id="view-dashboard">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="dash-total">0</div>
+                            <div class="stat-label">Total Articles</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dash-links">0</div>
+                            <div class="stat-label">Connections Found</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dash-confidence">0%</div>
+                            <div class="stat-label">Avg. Confidence</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dash-mod">0%</div>
+                            <div class="stat-label">Avg. Modification</div>
+                        </div>
+                        <div class="stat-card wide">
+                            <div class="stat-label">Topic Distribution</div>
+                            <div class="topic-bars" id="topic-bars"></div>
+                        </div>
+                        <div class="stat-card wide">
+                            <div class="stat-label">Recent Activity</div>
+                            <div class="activity-list" id="activity-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ethics View -->
+                <div class="view" id="view-ethics">
+                    <div class="ethics-container">
+                        <div class="ethics-hero">
+                            <h2>Ethical Considerations & Media Literacy</h2>
+                            <p>This tool uses AI to simplify news. Understanding its limitations is essential for responsible use.</p>
+                        </div>
+                        <div class="ethics-grid">
+                            <div class="ethics-card risk">
+                                <div class="ethics-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                </div>
+                                <h3>Reliability & Autonomy</h3>
+                                <p>Every summary displays <strong>confidence</strong> and <strong>modification</strong> scores. High modification means you may be missing nuance. The AI can make mistakes — always verify with original sources.</p>
+                            </div>
+                            <div class="ethics-card warning">
+                                <div class="ethics-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                </div>
+                                <h3>Critical Thinking</h3>
+                                <p>Simplified news can remove vocabulary you need, omit historical context, and discourage deep analysis. Use this as a starting point, not a replacement for reading full articles.</p>
+                            </div>
+                            <div class="ethics-card danger">
+                                <div class="ethics-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                </div>
+                                <h3>Bias & Echo Chambers</h3>
+                                <p>AI inherits biases from its training data. Summaries may favor dominant viewpoints. Article recommendations can create filter bubbles. Actively seek diverse sources.</p>
+                            </div>
+                            <div class="ethics-card info">
+                                <div class="ethics-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                </div>
+                                <h3>Economic Impact</h3>
+                                <p>Reading only summaries reduces traffic to original news sites, potentially defunding journalism. When possible, visit the original source — every click supports the reporters who did the work.</p>
+                            </div>
+                            <div class="ethics-card info">
+                                <div class="ethics-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                </div>
+                                <h3>Corporate & Government Influence</h3>
+                                <p>AI models reflect the values of their creators. Summaries may subtly push corporate or political agendas. Be aware of who controls the AI that filters your understanding of the world.</p>
+                            </div>
+                            <div class="ethics-card warning">
+                                <div class="ethics-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                                </div>
+                                <h3>Future of Journalism</h3>
+                                <p>As AI writes, summarizes, and curates news, the role of human journalists is at risk. A world of fully AI-generated news lacks accountability, on-the-ground reporting, and the human judgment that holds power to account.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Article Modal -->
+    <div id="add-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>Add News Article</h2>
+                <button class="modal-close" onclick="closeAddModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-tabs">
+                    <button class="tab-btn active" data-tab="paste">Paste Text</button>
+                    <button class="tab-btn" data-tab="url">From URL</button>
+                </div>
+
+                <form id="paste-form" class="tab-content active">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" placeholder="Article headline" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="source_url">Source URL (optional)</label>
+                        <input type="url" id="source_url" placeholder="https://example.com/article">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Article Text</label>
+                        <textarea id="text" rows="10" placeholder="Paste the full article text here..." required></textarea>
+                        <div class="form-hint">Minimum 50 characters. Longer texts give better summaries.</div>
+                    </div>
+                    <button type="submit" class="btn-primary btn-full">
+                        <span class="btn-text">Add & Summarize</span>
+                        <span class="btn-loader hidden"></span>
+                    </button>
+                </form>
+
+                <form id="url-form" class="tab-content">
+                    <div class="form-group">
+                        <label for="article-url">Article URL</label>
+                        <input type="url" id="article-url" placeholder="https://example.com/article" required>
+                        <div class="form-hint">We'll fetch the article content automatically.</div>
+                    </div>
+                    <button type="submit" class="btn-primary btn-full">
+                        <span class="btn-text">Fetch & Summarize</span>
+                        <span class="btn-loader hidden"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article Detail Modal -->
+    <div id="detail-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-panel modal-large">
+            <div class="modal-header">
+                <h2 id="detail-title">Article</h2>
+                <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="detail-body"></div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h2>Import Data</h2>
+                <button class="modal-close" onclick="closeImportModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Paste JSON export data</label>
+                    <textarea id="import-data" rows="10" placeholder='{"articles": [...], "links": [...]}'></textarea>
+                </div>
+                <button class="btn-primary btn-full" onclick="doImport()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

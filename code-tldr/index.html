@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeTLDR — Codebase Explorer</title>
+
+  <!-- Syntax highlighting -->
+  <link id="hlTheme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f17;
+      --surface:   #13151f;
+      --surface2:  #1c1f2e;
+      --surface3:  #252840;
+      --border:    #2a2d45;
+      --border2:   #383b5a;
+      --accent:    #7c8ef7;
+      --accent2:   #5c6bd4;
+      --accent-bg: rgba(124,142,247,.12);
+      --green:     #52d9b5;
+      --green-bg:  rgba(82,217,181,.1);
+      --red:       #ff6b6b;
+      --yellow:    #ffd93d;
+      --orange:    #ff9f43;
+      --text:      #e2e6ff;
+      --text2:     #a8b0d8;
+      --muted:     #6b7099;
+      --radius:    10px;
+      --radius-lg: 16px;
+      --mono:      'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      --sans:      -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      --shadow:    0 4px 24px rgba(0,0,0,.4);
+      --sidebar-w: 300px;
+    }
+
+    html.light {
+      --bg:        #f5f6fa;
+      --surface:   #ffffff;
+      --surface2:  #eef0f7;
+      --surface3:  #e2e5f0;
+      --border:    #d0d4e8;
+      --border2:   #b8bdd8;
+      --accent:    #4f62d8;
+      --accent2:   #3a4db5;
+      --accent-bg: rgba(79,98,216,.1);
+      --green:     #1a9b7a;
+      --green-bg:  rgba(26,155,122,.08);
+      --red:       #d63030;
+      --yellow:    #b38600;
+      --orange:    #c96a00;
+      --text:      #1a1d2e;
+      --text2:     #3d4466;
+      --muted:     #7880a8;
+      --shadow:    0 4px 24px rgba(0,0,0,.1);
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 18px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .logo .c1 { color: var(--accent); }
+    .logo .c2 { color: var(--green); }
+
+    .repo-form {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .repo-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .repo-input-wrap .icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .repo-input {
+      width: 100%;
+      padding: 8px 12px 8px 32px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .repo-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,142,247,.15);
+    }
+    .repo-input::placeholder { color: var(--muted); }
+
+    .header-actions { display: flex; gap: 6px; align-items: center; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: 0.825rem;
+      font-weight: 600;
+      font-family: var(--sans);
+      transition: opacity .15s, transform .1s, box-shadow .15s;
+      white-space: nowrap;
+    }
+    .btn:active:not(:disabled) { transform: scale(0.97); }
+    .btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent2); }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+
+    .btn-icon {
+      width: 32px; height: 32px;
+      padding: 0;
+      justify-content: center;
+      background: var(--surface2);
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    .btn-icon:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+
+    .btn-danger { background: rgba(255,107,107,.15); color: var(--red); border: 1px solid rgba(255,107,107,.3); }
+    .btn-danger:hover:not(:disabled) { background: rgba(255,107,107,.25); }
+
+    .btn-green { background: var(--green-bg); color: var(--green); border: 1px solid rgba(82,217,181,.25); }
+    .btn-green:hover:not(:disabled) { background: rgba(82,217,181,.2); }
+
+    /* ── TOAST NOTIFICATIONS ── */
+    #toastContainer {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 999;
+    }
+
+    .toast {
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      font-size: 0.825rem;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      animation: slideIn .25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 340px;
+      border: 1px solid;
+    }
+    .toast.info    { background: var(--surface2); border-color: var(--border2); color: var(--text); }
+    .toast.success { background: var(--green-bg); border-color: rgba(82,217,181,.3); color: var(--green); }
+    .toast.error   { background: rgba(255,107,107,.12); border-color: rgba(255,107,107,.3); color: var(--red); }
+    .toast.loading { background: var(--accent-bg); border-color: rgba(124,142,247,.3); color: var(--accent); }
+
+    @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+    @keyframes slideOut { from { opacity:1; } to { opacity:0; transform:translateX(20px); } }
+
+    /* ── WORKSPACE ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .sidebar-resize {
+      position: absolute;
+      right: -3px;
+      top: 0; bottom: 0;
+      width: 6px;
+      cursor: col-resize;
+      z-index: 5;
+    }
+    .sidebar-resize:hover { background: rgba(124,142,247,.3); }
+
+    .sidebar-top {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+    .search-wrap .icon {
+      position: absolute;
+      left: 9px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.8rem;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 6px 10px 6px 28px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    .filter-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .filter-chip {
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: all .15s;
+      font-family: var(--sans);
+    }
+    .filter-chip.active {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sel-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sel-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .sel-actions { display: flex; gap: 4px; }
+
+    /* File tree */
+    .file-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0 8px;
+    }
+    .file-tree::-webkit-scrollbar { width: 4px; }
+    .file-tree::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .folder-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text2);
+      cursor: pointer;
+      transition: background .1s;
+      user-select: none;
+    }
+    .folder-row:hover { background: var(--surface2); }
+    .folder-row .chevron { font-size: 0.65rem; color: var(--muted); transition: transform .2s; }
+    .folder-row .chevron.open { transform: rotate(90deg); }
+    .folder-row .f-count {
+      margin-left: auto;
+      font-size: 0.68rem;
+      background: var(--surface3);
+      color: var(--muted);
+      padding: 1px 5px;
+      border-radius: 8px;
+    }
+
+    .folder-children { overflow: hidden; }
+    .folder-children.collapsed { display: none; }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 12px 4px 26px;
+      font-size: 0.79rem;
+      color: var(--text2);
+      cursor: pointer;
+      transition: background .1s, color .1s;
+      border-left: 2px solid transparent;
+      position: relative;
+    }
+    .file-row:hover { background: var(--surface2); color: var(--text); }
+    .file-row.selected {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+    .file-row.previewed { border-left-color: var(--orange); }
+    .file-row .fname {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-row .ext-badge {
+      font-size: 0.62rem;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: var(--surface3);
+      color: var(--muted);
+      flex-shrink: 0;
+      font-family: var(--mono);
+    }
+
+    /* Sidebar bottom */
+    .sidebar-bottom {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .explain-btn-big {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, var(--accent), #9b6cf5);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 0.875rem;
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: opacity .15s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .explain-btn-big:hover:not(:disabled) { opacity: .9; }
+    .explain-btn-big:active:not(:disabled) { transform: scale(.98); }
+    .explain-btn-big:disabled { opacity: .3; cursor: not-allowed; }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 2px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    /* ── MAIN PANEL ── */
+    .main-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 0 16px;
+      flex-shrink: 0;
+      justify-content: space-between;
+    }
+
+    .tabs { display: flex; }
+
+    .tab-btn {
+      padding: 10px 16px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .15s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    .tab-actions { display: flex; gap: 6px; align-items: center; }
+
+    /* Panel content */
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+    }
+    .panel-content::-webkit-scrollbar { width: 6px; }
+    .panel-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .empty-state .big-icon { font-size: 3.5rem; filter: grayscale(.3); }
+    .empty-state h2 { font-size: 1.2rem; color: var(--text); font-weight: 700; }
+    .empty-state p { font-size: 0.875rem; max-width: 400px; line-height: 1.7; color: var(--text2); }
+
+    /* ── RECENT REPOS ── */
+    .recent-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+    .recent-chip {
+      padding: 5px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .recent-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── SUMMARY GRID ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .stat-card .label { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-card .value { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+    .stat-card .value.sm { font-size: 0.9rem; }
+
+    /* ── EXPLANATION CARDS ── */
+    .exp-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 18px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .exp-card:hover { border-color: var(--border2); }
+
+    .exp-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .exp-card-filename {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--green);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .exp-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+    .exp-card-body {
+      padding: 18px 20px;
+    }
+    .exp-card-body.collapsed { display: none; }
+
+    /* ── MARKDOWN STYLES ── */
+    .md-body {
+      line-height: 1.75;
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+    .md-body h1, .md-body h2, .md-body h3 {
+      color: var(--accent);
+      margin: 18px 0 8px;
+      font-size: 0.95rem;
+    }
+    .md-body h1 { font-size: 1.05rem; }
+    .md-body p { margin-bottom: 10px; }
+    .md-body code {
+      background: var(--surface2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--green);
+    }
+    .md-body pre {
+      background: var(--bg) !important;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0 !important;
+      margin: 12px 0;
+      overflow: auto;
+    }
+    .md-body pre code {
+      background: none !important;
+      padding: 14px 16px !important;
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text) !important;
+    }
+    .md-body ul, .md-body ol { padding-left: 22px; margin-bottom: 10px; }
+    .md-body li { margin-bottom: 5px; }
+    .md-body blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 14px;
+      margin: 12px 0;
+      color: var(--text2);
+      font-style: italic;
+    }
+    .md-body strong { color: var(--text); }
+    .md-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .md-body table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .md-body th, .md-body td { padding: 7px 12px; border: 1px solid var(--border); font-size: 0.82rem; }
+    .md-body th { background: var(--surface2); color: var(--text2); font-weight: 600; }
+
+    /* ── CODE VIEWER ── */
+    .code-viewer {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .code-viewer-header {
+      padding: 10px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .code-viewer-header .fname { color: var(--green); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .code-viewer pre {
+      padding: 0 !important;
+      margin: 0;
+      max-height: calc(100vh - 180px);
+    }
+    .code-viewer pre code { padding: 16px 18px !important; display: block; font-size: 0.79rem; }
+
+    /* ── CHAT PANEL ── */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 0;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px 24px;
+      min-height: 0;
+    }
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+      max-width: 100%;
+    }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .chat-msg.ai .chat-avatar { background: var(--accent-bg); border: 1px solid rgba(124,142,247,.3); }
+    .chat-msg.user .chat-avatar { background: var(--surface3); border: 1px solid var(--border2); }
+
+    .chat-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      max-width: calc(100% - 50px);
+      font-size: 0.85rem;
+      line-height: 1.65;
+    }
+    .chat-msg.ai .chat-bubble {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+    }
+    .chat-msg.user .chat-bubble {
+      background: var(--accent-bg);
+      border: 1px solid rgba(124,142,247,.25);
+      border-top-right-radius: 4px;
+      color: var(--text);
+    }
+
+    .chat-input-area {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .chat-form {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .chat-textarea {
+      flex: 1;
+      padding: 9px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: var(--sans);
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      max-height: 120px;
+      transition: border-color .2s;
+    }
+    .chat-textarea:focus { border-color: var(--accent); }
+    .chat-textarea::placeholder { color: var(--muted); }
+
+    .chat-hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── LOADING ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-dots { display: inline-flex; gap: 4px; }
+    .loading-dots span {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: bounce .8s ease infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: .15s; }
+    .loading-dots span:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+    /* ── STREAMING CURSOR ── */
+    .cursor {
+      display: inline-block;
+      width: 2px; height: 1em;
+      background: var(--accent);
+      animation: blink .7s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      width: 460px;
+      max-width: calc(100vw - 32px);
+      box-shadow: var(--shadow);
+    }
+    .modal h2 { font-size: 1.05rem; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 8px 11px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.875rem;
+      font-family: var(--sans);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .form-group .hint { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    /* ── KEYBOARD SHORTCUT BADGE ── */
+    .kbd {
+      display: inline-block;
+      padding: 1px 5px;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
+    /* ── OVERVIEW TAB SPECIFICS ── */
+    .overview-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .overview-section h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .lang-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      gap: 2px;
+      margin-bottom: 10px;
+    }
+    .lang-segment { height: 100%; transition: flex .4s; }
+
+    .lang-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .lang-dot {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.76rem;
+      color: var(--text2);
+    }
+    .lang-dot .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Scrollable panel fix for chat */
+    #chatPanel {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .panel-hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ── SETTINGS MODAL ── -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal">
+    <h2>⚙️ Settings</h2>
+    <div class="form-group">
+      <label>LM Studio URL</label>
+      <input type="text" id="cfgLmUrl" value="http://localhost:1234" />
+      <div class="hint">Make sure LM Studio is running and CORS is enabled in Server settings.</div>
+    </div>
+    <div class="form-group">
+      <label>Model name (as shown in LM Studio)</label>
+      <input type="text" id="cfgModel" value="gemma-4-e4b" />
+    </div>
+    <div class="form-group">
+      <label>GitHub Personal Access Token <span style="color:var(--muted);text-transform:none;font-weight:400">(optional)</span></label>
+      <input type="password" id="cfgGhToken" placeholder="ghp_..." />
+      <div class="hint">Raises the API rate limit from 60 to 5,000 requests/hour.</div>
+    </div>
+    <div class="form-group">
+      <label>Max files fetched per repo</label>
+      <input type="number" id="cfgMaxFiles" value="80" min="10" max="500" />
+    </div>
+    <div class="form-group">
+      <label>System prompt (LLM persona)</label>
+      <textarea id="cfgSystemPrompt" rows="4" style="resize:vertical;"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ── -->
+<div id="toastContainer"></div>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo"><span class="c1">code</span><span class="c2">tldr</span></div>
+
+  <form class="repo-form" onsubmit="loadRepo(event)">
+    <div class="repo-input-wrap">
+      <span class="icon">🔗</span>
+      <input class="repo-input" id="repoInput" type="url"
+        placeholder="https://github.com/owner/repo"
+        autocomplete="off" spellcheck="false" />
+    </div>
+    <button class="btn btn-primary" type="submit" id="loadBtn">Load Repo</button>
+  </form>
+
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="exportMarkdown()" id="exportBtn" disabled title="Export explanations as Markdown">
+      ⬇ Export
+    </button>
+    <button class="btn-icon btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+    <button class="btn-icon btn" onclick="openSettings()" title="Settings ⌘,">⚙</button>
+  </div>
+</header>
+
+<!-- ── WORKSPACE ── -->
+<div class="workspace">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-resize" id="sidebarResize"></div>
+
+    <div class="sidebar-top">
+      <!-- Search -->
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input class="search-input" id="searchInput" placeholder="Filter files…" oninput="filterFiles()" />
+      </div>
+
+      <!-- Language filters -->
+      <div class="filter-row" id="filterRow"></div>
+
+      <!-- Select row -->
+      <div class="sel-row">
+        <span class="sel-count" id="selCount">0 selected</span>
+        <div class="sel-actions">
+          <button class="btn btn-ghost" style="padding:3px 8px;font-size:0.72rem" onclick="selectAll()">All</button>
+          <button class="btn btn-ghost" style="padding:3px 8px;font-size:0.72rem" onclick="selectNone()">None</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- File tree -->
+    <div class="file-tree" id="fileTree">
+      <div style="padding:24px 16px;color:var(--muted);font-size:0.8rem;line-height:1.8;text-align:center">
+        Paste a GitHub URL above and hit <strong>Load Repo</strong>.<br>
+        Then pick files and click Explain.
+      </div>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="sidebar-bottom">
+      <div class="progress-bar" id="progressBar" style="display:none">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <button class="explain-btn-big" id="explainBtn" disabled onclick="explainSelected()">
+        ✨ Explain Selected
+      </button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost" style="flex:1;font-size:0.78rem" id="overviewBtn" disabled onclick="generateOverview()">
+          🗺 Overview
+        </button>
+        <button class="btn btn-ghost" style="flex:1;font-size:0.78rem" id="explainAllBtn" disabled onclick="explainAll()">
+          📦 All Files
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN PANEL -->
+  <div class="main-panel">
+    <div class="tab-bar">
+      <div class="tabs">
+        <div class="tab-btn active" id="tabExplain" onclick="switchTab('explain')">💡 Explanations</div>
+        <div class="tab-btn" id="tabOverview" onclick="switchTab('overview')">🗺 Overview</div>
+        <div class="tab-btn" id="tabCode" onclick="switchTab('code')">📄 Code</div>
+        <div class="tab-btn" id="tabChat" onclick="switchTab('chat')">💬 Ask AI</div>
+      </div>
+      <div class="tab-actions" id="tabActions"></div>
+    </div>
+
+    <!-- EXPLAIN TAB -->
+    <div class="panel-content" id="explainPanel">
+      <div class="empty-state" id="explainEmpty">
+        <div class="big-icon">🚀</div>
+        <h2>Understand any codebase in minutes</h2>
+        <p>Paste a GitHub repo URL, select the files you want to understand, then hit <strong>Explain Selected</strong>.</p>
+        <div id="recentSection" style="display:none">
+          <p style="font-size:0.78rem;margin-bottom:8px">Recent repos:</p>
+          <div class="recent-list" id="recentList"></div>
+        </div>
+      </div>
+      <div id="explainCards" style="display:none"></div>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div class="panel-content panel-hidden" id="overviewPanel">
+      <div class="empty-state">
+        <div class="big-icon">🗺</div>
+        <h2>Repo overview</h2>
+        <p>Click <strong>🗺 Overview</strong> in the sidebar to generate an AI-powered architecture summary of the entire repo.</p>
+      </div>
+    </div>
+
+    <!-- CODE TAB -->
+    <div class="panel-content panel-hidden" id="codePanel">
+      <div class="empty-state">
+        <div class="big-icon">📄</div>
+        <h2>Code preview</h2>
+        <p>Click a file in the sidebar to view its source with syntax highlighting.</p>
+      </div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="panel-hidden" id="chatPanel">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg ai">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-bubble md-body">
+            Hi! I'm your codebase assistant. Load a repo and ask me anything about it — architecture decisions, how a feature works, where a bug might be hiding, or how to get started as a new contributor.
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <form class="chat-form" onsubmit="sendChat(event)">
+          <textarea class="chat-textarea" id="chatInput" placeholder="Ask anything about the codebase… (Shift+Enter for new line)" rows="2"
+            onkeydown="chatKeydown(event)"></textarea>
+          <button class="btn btn-primary" type="submit" id="chatSendBtn" style="align-self:flex-end">Send</button>
+        </form>
+        <div class="chat-hint">The AI has context of all files you've selected or explained. <span class="kbd">Enter</span> to send.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let repoOwner = '', repoName = '', defaultBranch = '';
+let allFiles   = [];            // {path, type, size}
+let selectedPaths = new Set();
+let fileCache  = {};            // path → string content
+let explanations = {};          // path → string markdown
+let activeTab  = 'explain';
+let previewedPath = null;
+let filterQuery = '';
+let activeFilters = new Set();  // language extensions
+let isWorking = false;
+let chatHistory = [];           // [{role, content}]
+let abortController = null;
+
+// ─────────────────────────────────────────────
+//  SETTINGS
+// ─────────────────────────────────────────────
+const DEFAULT_SYSTEM = `You are a senior software engineer explaining a codebase to a new developer joining the project.
+Be clear, structured, and genuinely helpful. Use markdown: headings (###), bullet points, bold text, and short code examples where relevant.
+Focus on: what this code does, why it exists, key functions/classes/exports, connections to other parts of the codebase, and non-obvious gotchas.
+Keep explanations practical and concise.`;
+
+function cfg(key) { return localStorage.getItem(key); }
+
+function getSettings() {
+  return {
+    lmUrl:    cfg('lmUrl')    || 'http://localhost:1234',
+    model:    cfg('model')    || 'gemma-4-e4b',
+    ghToken:  cfg('ghToken')  || '',
+    maxFiles: parseInt(cfg('maxFiles') || '80'),
+    system:   cfg('systemPrompt') || DEFAULT_SYSTEM,
+  };
+}
+
+function openSettings() {
+  const s = getSettings();
+  document.getElementById('cfgLmUrl').value        = s.lmUrl;
+  document.getElementById('cfgModel').value        = s.model;
+  document.getElementById('cfgGhToken').value      = s.ghToken;
+  document.getElementById('cfgMaxFiles').value     = s.maxFiles;
+  document.getElementById('cfgSystemPrompt').value = s.system;
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+function saveSettings() {
+  localStorage.setItem('lmUrl',         document.getElementById('cfgLmUrl').value.trim());
+  localStorage.setItem('model',         document.getElementById('cfgModel').value.trim());
+  localStorage.setItem('ghToken',       document.getElementById('cfgGhToken').value.trim());
+  localStorage.setItem('maxFiles',      document.getElementById('cfgMaxFiles').value);
+  localStorage.setItem('systemPrompt',  document.getElementById('cfgSystemPrompt').value.trim());
+  closeSettings();
+  toast('Settings saved', 'success');
+}
+document.getElementById('settingsModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSettings();
+});
+
+// ─────────────────────────────────────────────
+//  TOASTS
+// ─────────────────────────────────────────────
+const toastTimers = new Map();
+function toast(msg, type = 'info', duration = 3500) {
+  const id = Date.now().toString();
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `${type === 'loading' ? '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div>' : ''}<span>${msg}</span>`;
+  el.dataset.id = id;
+  document.getElementById('toastContainer').appendChild(el);
+
+  if (duration > 0) {
+    const t = setTimeout(() => removeToast(id), duration);
+    toastTimers.set(id, t);
+  }
+  return id;
+}
+function removeToast(id) {
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if (!el) return;
+  el.style.animation = 'slideOut .25s ease forwards';
+  setTimeout(() => el.remove(), 250);
+  clearTimeout(toastTimers.get(id));
+  toastTimers.delete(id);
+}
+function updateToast(id, msg, type) {
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if (!el) return;
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${msg}</span>`;
+  clearTimeout(toastTimers.get(id));
+  const t = setTimeout(() => removeToast(id), 3500);
+  toastTimers.set(id, t);
+}
+
+// ─────────────────────────────────────────────
+//  GITHUB HELPERS
+// ─────────────────────────────────────────────
+function ghHeaders() {
+  const h = { 'Accept': 'application/vnd.github+json' };
+  const t = getSettings().ghToken;
+  if (t) h['Authorization'] = `Bearer ${t}`;
+  return h;
+}
+
+async function ghFetch(url) {
+  const res = await fetch(url, { headers: ghHeaders() });
+  if (res.status === 403) throw new Error('GitHub rate limit hit. Add a token in Settings to fix this.');
+  if (res.status === 404) throw new Error('Repo not found or private. Check the URL.');
+  if (!res.ok) throw new Error(`GitHub error ${res.status}: ${res.statusText}`);
+  return res.json();
+}
+
+function parseRepoUrl(raw) {
+  const m = raw.trim().replace(/\/$/, '').match(/github\.com\/([^/]+)\/([^/?#]+)/);
+  if (!m) return null;
+  return { owner: m[1], repo: m[2].replace(/\.git$/, '') };
+}
+
+// ─────────────────────────────────────────────
+//  FILE EXTENSIONS / LANGUAGE COLORS
+// ─────────────────────────────────────────────
+const LANG_COLORS = {
+  js:'#f7df1e', jsx:'#61dafb', ts:'#3178c6', tsx:'#61dafb',
+  py:'#3572A5', go:'#00ADD8', rs:'#dea584', java:'#b07219',
+  cpp:'#f34b7d', c:'#555555', cs:'#239120', rb:'#701516',
+  php:'#4F5D95', vue:'#41b883', svelte:'#ff3e00', html:'#e34c26',
+  css:'#563d7c', scss:'#c6538c', md:'#083fa1', json:'#292929',
+  yaml:'#cb171e', yml:'#cb171e', sh:'#89e051', sql:'#e38c00',
+  kt:'#A97BFF', swift:'#ffac45', dart:'#00B4AB',
+};
+
+const CODE_EXTS = new Set([
+  'js','jsx','ts','tsx','py','go','rs','java','cpp','c','cs','rb','php',
+  'vue','svelte','html','css','scss','md','json','yaml','yml','sh','toml',
+  'kt','swift','dart','ex','exs','r','lua','zig','sql','graphql','proto'
+]);
+
+function fileExt(path) { return path.split('.').pop().toLowerCase(); }
+function isCode(path) { return CODE_EXTS.has(fileExt(path)); }
+
+function skipPath(path) {
+  const skip = ['node_modules/','dist/','build/','__pycache__/','coverage/','.next/','vendor/','target/','.gradle/'];
+  return skip.some(s => path.includes(s));
+}
+
+const FILE_ICONS = {
+  js:'🟨', jsx:'⚛️', ts:'🔷', tsx:'⚛️', py:'🐍', go:'🐹', rs:'🦀',
+  java:'☕', cpp:'⚡', c:'⚡', cs:'💠', rb:'💎', php:'🐘', vue:'💚',
+  svelte:'🧡', html:'🌐', css:'🎨', scss:'🎨', md:'📝', json:'📋',
+  yaml:'📋', yml:'📋', sh:'⚡', sql:'🗄️', kt:'🟣', swift:'🍎', dart:'💙',
+};
+function fileIcon(path) { return FILE_ICONS[fileExt(path)] || '📄'; }
+
+// ─────────────────────────────────────────────
+//  RECENT REPOS
+// ─────────────────────────────────────────────
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem('recentRepos') || '[]'); } catch { return []; }
+}
+function addRecent(owner, repo) {
+  let list = getRecent().filter(r => r !== `${owner}/${repo}`);
+  list.unshift(`${owner}/${repo}`);
+  list = list.slice(0, 6);
+  localStorage.setItem('recentRepos', JSON.stringify(list));
+}
+function renderRecent() {
+  const list = getRecent();
+  const sec  = document.getElementById('recentSection');
+  const el   = document.getElementById('recentList');
+  if (!list.length) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  el.innerHTML = list.map(r => `
+    <div class="recent-chip" onclick="loadFromRecent('${r}')">
+      ${r}
+    </div>
+  `).join('');
+}
+function loadFromRecent(r) {
+  document.getElementById('repoInput').value = `https://github.com/${r}`;
+  loadRepo(null, r);
+}
+
+// ─────────────────────────────────────────────
+//  LOAD REPO
+// ─────────────────────────────────────────────
+async function loadRepo(e, directSlug) {
+  if (e) e.preventDefault();
+  const raw = directSlug
+    ? `https://github.com/${directSlug}`
+    : document.getElementById('repoInput').value;
+
+  const parsed = parseRepoUrl(raw);
+  if (!parsed) { toast('Could not parse that URL. Try: https://github.com/owner/repo', 'error'); return; }
+
+  if (isWorking) return;
+  isWorking = true;
+
+  repoOwner = parsed.owner;
+  repoName  = parsed.repo;
+  selectedPaths.clear();
+  fileCache  = {};
+  explanations = {};
+  allFiles   = [];
+  activeFilters.clear();
+  chatHistory = [];
+
+  document.getElementById('loadBtn').disabled = true;
+  document.getElementById('explainBtn').disabled = true;
+  document.getElementById('overviewBtn').disabled = true;
+  document.getElementById('explainAllBtn').disabled = true;
+  document.getElementById('exportBtn').disabled = true;
+
+  const tid = toast(`Fetching ${repoOwner}/${repoName}…`, 'loading', 0);
+
+  try {
+    const meta   = await ghFetch(`https://api.github.com/repos/${repoOwner}/${repoName}`);
+    defaultBranch = meta.default_branch;
+
+    const tree = await ghFetch(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/git/trees/${defaultBranch}?recursive=1`
+    );
+
+    if (tree.truncated) toast('Repo is very large — tree was truncated by GitHub.', 'info');
+
+    const max = getSettings().maxFiles;
+    allFiles = tree.tree
+      .filter(f => f.type === 'blob' && isCode(f.path) && !skipPath(f.path))
+      .slice(0, max);
+
+    renderFileTree();
+    buildFilterChips();
+    updateSelCount();
+
+    document.getElementById('overviewBtn').disabled  = false;
+    document.getElementById('explainAllBtn').disabled = false;
+
+    addRecent(repoOwner, repoName);
+    updateToast(tid, `Loaded ${allFiles.length} files from ${repoOwner}/${repoName}`, 'success');
+
+    // Show explanation panel / clear old results
+    showExplainEmpty();
+  } catch (err) {
+    updateToast(tid, err.message, 'error');
+  } finally {
+    isWorking = false;
+    document.getElementById('loadBtn').disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  FILE TREE
+// ─────────────────────────────────────────────
+function filteredFiles() {
+  return allFiles.filter(f => {
+    const matchQuery = !filterQuery || f.path.toLowerCase().includes(filterQuery);
+    const matchExt   = !activeFilters.size || activeFilters.has(fileExt(f.path));
+    return matchQuery && matchExt;
+  });
+}
+
+function renderFileTree() {
+  const tree  = document.getElementById('fileTree');
+  const files = filteredFiles();
+
+  if (!files.length && allFiles.length > 0) {
+    tree.innerHTML = `<div style="padding:20px;color:var(--muted);text-align:center;font-size:0.8rem">No files match the filter.</div>`;
+    return;
+  }
+  if (!allFiles.length) return;
+
+  // Group by top-level path segment
+  const groups = {};
+  files.forEach(f => {
+    const parts = f.path.split('/');
+    const group = parts.length > 1 ? parts[0] : '(root)';
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(f);
+  });
+
+  let html = '';
+  for (const [folder, items] of Object.entries(groups)) {
+    const folderId = 'f-' + folder.replace(/\W/g, '_');
+    html += `
+      <div class="folder-group">
+        <div class="folder-row" onclick="toggleFolder('${folderId}')">
+          <span class="chevron open" id="chev-${folderId}">▶</span>
+          <span>📁 ${folder}</span>
+          <span class="f-count">${items.length}</span>
+        </div>
+        <div class="folder-children" id="${folderId}">
+          ${items.map(f => fileRowHtml(f)).join('')}
+        </div>
+      </div>`;
+  }
+  tree.innerHTML = html;
+}
+
+function fileRowHtml(f) {
+  const sel       = selectedPaths.has(f.path) ? ' selected' : '';
+  const preview   = previewedPath === f.path ? ' previewed' : '';
+  const ext       = fileExt(f.path);
+  const icon      = fileIcon(f.path);
+  const fname     = f.path.split('/').pop();
+  return `<div class="file-row${sel}${preview}" data-path="${f.path}"
+    onclick="toggleFile('${f.path}', this)"
+    ondblclick="previewFile('${f.path}')">
+    <span>${icon}</span>
+    <span class="fname" title="${f.path}">${fname}</span>
+    <span class="ext-badge">.${ext}</span>
+  </div>`;
+}
+
+function toggleFolder(id) {
+  const el   = document.getElementById(id);
+  const chev = document.getElementById(`chev-${id}`);
+  if (!el) return;
+  const open = !el.classList.contains('collapsed');
+  el.classList.toggle('collapsed', open);
+  chev.classList.toggle('open', !open);
+}
+
+function buildFilterChips() {
+  const extCounts = {};
+  allFiles.forEach(f => { const e = fileExt(f.path); extCounts[e] = (extCounts[e]||0)+1; });
+  const top = Object.entries(extCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const row = document.getElementById('filterRow');
+  row.innerHTML = top.map(([ext]) => `
+    <div class="filter-chip" data-ext="${ext}" onclick="toggleFilter('${ext}', this)">.${ext}</div>
+  `).join('');
+}
+
+function toggleFilter(ext, el) {
+  if (activeFilters.has(ext)) {
+    activeFilters.delete(ext);
+    el.classList.remove('active');
+  } else {
+    activeFilters.add(ext);
+    el.classList.add('active');
+  }
+  renderFileTree();
+}
+
+function filterFiles() {
+  filterQuery = document.getElementById('searchInput').value.toLowerCase();
+  renderFileTree();
+}
+
+function toggleFile(path, el) {
+  if (selectedPaths.has(path)) {
+    selectedPaths.delete(path);
+    el.classList.remove('selected');
+  } else {
+    selectedPaths.add(path);
+    el.classList.add('selected');
+  }
+  updateSelCount();
+
+  // Auto preview on click
+  if (activeTab === 'code') previewFile(path);
+}
+
+function selectAll() {
+  filteredFiles().forEach(f => selectedPaths.add(f.path));
+  renderFileTree();
+  updateSelCount();
+}
+function selectNone() {
+  selectedPaths.clear();
+  renderFileTree();
+  updateSelCount();
+}
+
+function updateSelCount() {
+  const n = selectedPaths.size;
+  document.getElementById('selCount').textContent = `${n} selected`;
+  document.getElementById('explainBtn').disabled = n === 0 || isWorking;
+}
+
+// ─────────────────────────────────────────────
+//  CODE PREVIEW
+// ─────────────────────────────────────────────
+async function previewFile(path) {
+  switchTab('code');
+  previewedPath = path;
+  document.getElementById('codePanel').innerHTML =
+    `<div style="display:flex;justify-content:center;padding:40px"><div class="spinner"></div></div>`;
+
+  const content = await fetchFile(path);
+  const ext = fileExt(path);
+  const escaped = escHtml(content);
+
+  document.getElementById('codePanel').innerHTML = `
+    <div class="code-viewer">
+      <div class="code-viewer-header">
+        <span class="fname">📄 ${path}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="color:var(--muted);font-size:0.72rem">${content.split('\n').length} lines · ${humanSize(content.length)}</span>
+          <button class="btn btn-icon" style="width:auto;padding:2px 8px;font-size:0.72rem" onclick="copyToClipboard(fileCache['${path}'], 'Code copied!')">Copy</button>
+          <button class="btn btn-green" style="padding:2px 10px;font-size:0.72rem" onclick="explainPaths(['${path}'])">✨ Explain</button>
+        </div>
+      </div>
+      <pre><code class="language-${ext}">${escaped}</code></pre>
+    </div>
+  `;
+  hljs.highlightAll();
+
+  // Update sidebar highlight
+  document.querySelectorAll('.file-row').forEach(el => {
+    el.classList.toggle('previewed', el.dataset.path === path);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  FETCH FILE
+// ─────────────────────────────────────────────
+async function fetchFile(path) {
+  if (fileCache[path]) return fileCache[path];
+  try {
+    const data = await ghFetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${encodeURIComponent(path)}`);
+    // GitHub returns base64; handle line breaks in the base64 string
+    fileCache[path] = decodeBase64(data.content);
+    return fileCache[path];
+  } catch (err) {
+    fileCache[path] = `// Failed to fetch: ${err.message}`;
+    return fileCache[path];
+  }
+}
+
+function decodeBase64(b64) {
+  try {
+    return decodeURIComponent(
+      atob(b64.replace(/\s/g, ''))
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+  } catch {
+    return atob(b64.replace(/\s/g, ''));
+  }
+}
+
+// ─────────────────────────────────────────────
+//  LLM STREAMING
+// ─────────────────────────────────────────────
+async function callLLM(messages, onChunk, signal) {
+  const s = getSettings();
+  const res = await fetch(`${s.lmUrl}/v1/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal,
+    body: JSON.stringify({
+      model: s.model,
+      stream: true,
+      temperature: 0.4,
+      messages: [{ role: 'system', content: s.system }, ...messages],
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`LM Studio responded with ${res.status}. Is it running? CORS enabled?${body ? '\n' + body.slice(0,200) : ''}`);
+  }
+
+  const reader  = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const d = line.slice(6).trim();
+      if (d === '[DONE]') return;
+      try {
+        const delta = JSON.parse(d).choices?.[0]?.delta?.content;
+        if (delta) onChunk(delta);
+      } catch {}
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+//  EXPLAIN FILES
+// ─────────────────────────────────────────────
+async function explainSelected() { await explainPaths([...selectedPaths]); }
+async function explainAll()      { await explainPaths(allFiles.map(f => f.path)); }
+
+async function explainPaths(paths) {
+  if (!paths.length || isWorking) return;
+  isWorking = true;
+  setWorking(true);
+  switchTab('explain');
+
+  document.getElementById('explainEmpty').style.display = 'none';
+  const cards = document.getElementById('explainCards');
+  cards.style.display = 'block';
+
+  // Stats bar
+  cards.innerHTML = `
+    <div class="summary-grid" id="statsGrid">
+      <div class="stat-card"><div class="label">Files</div><div class="value">${paths.length}</div></div>
+      <div class="stat-card"><div class="label">Repo</div><div class="value sm">${repoOwner}/${repoName}</div></div>
+      <div class="stat-card"><div class="label">Branch</div><div class="value sm">${defaultBranch}</div></div>
+    </div>
+    <div id="cardsContainer"></div>
+  `;
+
+  const container  = document.getElementById('cardsContainer');
+  abortController  = new AbortController();
+  let done = 0;
+  setProgress(0, paths.length);
+
+  for (const path of paths) {
+    if (abortController.signal.aborted) break;
+
+    const content = await fetchFile(path);
+    const cardId  = 'card-' + path.replace(/[^a-z0-9]/gi,'_');
+    const bodyId  = cardId + '_body';
+
+    const card = document.createElement('div');
+    card.className = 'exp-card';
+    card.id = cardId;
+    card.innerHTML = `
+      <div class="exp-card-header" onclick="toggleCard('${bodyId}')">
+        <span class="exp-card-filename">📄 ${path}</span>
+        <div class="exp-card-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-icon" style="width:auto;padding:2px 8px;font-size:0.7rem"
+            onclick="copyToClipboard(explanations['${path}']||'', 'Explanation copied!')">Copy</button>
+          <button class="btn btn-ghost" style="padding:2px 8px;font-size:0.7rem"
+            onclick="previewFile('${path}')">Code</button>
+          <span style="color:var(--muted);font-size:0.9rem;cursor:pointer" id="chevExp-${bodyId}">▾</span>
+        </div>
+      </div>
+      <div class="exp-card-body" id="${bodyId}">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.8rem">
+          <div class="spinner"></div> Generating explanation…
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    const bodyEl = document.getElementById(bodyId);
+    let raw = '';
+
+    try {
+      const prompt = buildExplainPrompt(path, content);
+      await callLLM(
+        [{ role: 'user', content: prompt }],
+        chunk => {
+          raw += chunk;
+          bodyEl.innerHTML = `<div class="md-body">${renderMD(raw)}</div><span class="cursor"></span>`;
+        },
+        abortController.signal
+      );
+      bodyEl.innerHTML = `<div class="md-body">${renderMD(raw)}</div>`;
+      hljs.highlightAll();
+      explanations[path] = raw;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        bodyEl.innerHTML = `<span style="color:var(--orange)">⏹ Cancelled</span>`;
+        break;
+      }
+      bodyEl.innerHTML = `
+        <div style="color:var(--red)">⚠️ ${escHtml(err.message)}</div>
+        <p style="color:var(--muted);font-size:0.78rem;margin-top:8px">
+          Make sure LM Studio is running, CORS is enabled (Server → Enable CORS), and the model name matches.
+        </p>`;
+    }
+
+    done++;
+    setProgress(done, paths.length);
+  }
+
+  const count = Object.keys(explanations).length;
+  if (count > 0) document.getElementById('exportBtn').disabled = false;
+  isWorking = false;
+  setWorking(false);
+  setProgress(0, 1, true);
+  abortController = null;
+}
+
+function buildExplainPrompt(path, content) {
+  const ext = fileExt(path);
+  const truncated = content.length > 10000 ? content.slice(0, 10000) + '\n\n[... file truncated for context ...]' : content;
+  return `Here is the file \`${path}\` (language: ${ext}) from the repo \`${repoOwner}/${repoName}\`:
+
+\`\`\`${ext}
+${truncated}
+\`\`\`
+
+Please explain this file to a new developer joining the project. Structure your response with:
+
+### Purpose
+What does this file do and why does it exist?
+
+### Key Components
+Walk through the most important functions, classes, exports, or config values.
+
+### How It Connects
+How does this file interact with the rest of the codebase? What does it depend on or expose?
+
+### For New Developers
+Anything non-obvious, surprising, or critical to understand before touching this file?`;
+}
+
+function toggleCard(id) {
+  const el   = document.getElementById(id);
+  const chev = document.getElementById(`chevExp-${id}`);
+  if (!el) return;
+  const hidden = el.classList.toggle('collapsed');
+  if (chev) chev.textContent = hidden ? '▸' : '▾';
+}
+
+// ─────────────────────────────────────────────
+//  OVERVIEW GENERATION
+// ─────────────────────────────────────────────
+async function generateOverview() {
+  if (isWorking || !allFiles.length) return;
+  switchTab('overview');
+  isWorking = true;
+  setWorking(true);
+
+  const panel = document.getElementById('overviewPanel');
+
+  // Language stats
+  const extCounts = {};
+  allFiles.forEach(f => { const e = fileExt(f.path); extCounts[e] = (extCounts[e]||0)+1; });
+  const total = allFiles.length;
+  const sorted = Object.entries(extCounts).sort((a,b)=>b[1]-a[1]);
+
+  const langBarHtml = sorted.slice(0,8).map(([ext, n]) => {
+    const pct  = (n/total*100).toFixed(1);
+    const col  = LANG_COLORS[ext] || '#6b7099';
+    return `<div class="lang-segment" style="flex:${n};background:${col}" title=".${ext} ${pct}%"></div>`;
+  }).join('');
+
+  const legendHtml = sorted.slice(0,8).map(([ext, n]) => {
+    const col = LANG_COLORS[ext] || '#6b7099';
+    return `<div class="lang-dot"><div class="dot" style="background:${col}"></div>.${ext} ${n}</div>`;
+  }).join('');
+
+  const summaryId = 'overviewSummary';
+  panel.innerHTML = `
+    <div class="summary-grid">
+      <div class="stat-card"><div class="label">Total files</div><div class="value">${allFiles.length}</div></div>
+      <div class="stat-card"><div class="label">Languages</div><div class="value">${sorted.length}</div></div>
+      <div class="stat-card"><div class="label">Default branch</div><div class="value sm">${defaultBranch}</div></div>
+    </div>
+
+    <div class="overview-section">
+      <h3>🌈 Language Breakdown</h3>
+      <div class="lang-bar">${langBarHtml}</div>
+      <div class="lang-legend">${legendHtml}</div>
+    </div>
+
+    <div class="overview-section">
+      <h3>🗺 Architecture Summary</h3>
+      <div id="${summaryId}" class="md-body">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--muted)">
+          <div class="spinner"></div> Analyzing repo structure…
+        </div>
+      </div>
+    </div>
+  `;
+
+  abortController = new AbortController();
+  const summaryEl = document.getElementById(summaryId);
+
+  // Build a structural snapshot for the LLM
+  const filePaths = allFiles.map(f => f.path).join('\n');
+  const existingExps = Object.entries(explanations).slice(0, 5)
+    .map(([p, e]) => `--- ${p} ---\n${e.slice(0,500)}`).join('\n\n');
+
+  const prompt = `You are analyzing the repo \`${repoOwner}/${repoName}\`.
+
+Here is the complete file list (${allFiles.length} files):
+\`\`\`
+${filePaths}
+\`\`\`
+${existingExps ? `\nHere are summaries of some key files for extra context:\n${existingExps}` : ''}
+
+Please provide a comprehensive architecture overview covering:
+
+### Project Purpose
+What does this project do? Who is it for?
+
+### Architecture & Structure
+How is the codebase organized? What are the main layers/modules?
+
+### Key Entry Points
+Where does execution start? What are the most important files for a new developer to read first?
+
+### Tech Stack
+What languages, frameworks, and major libraries are used?
+
+### Data Flow
+How does data move through the system at a high level?
+
+### Getting Started Recommendations
+As a new developer, which 5 files should I read first and why?`;
+
+  let raw = '';
+  try {
+    await callLLM(
+      [{ role: 'user', content: prompt }],
+      chunk => {
+        raw += chunk;
+        summaryEl.innerHTML = renderMD(raw) + '<span class="cursor"></span>';
+      },
+      abortController.signal
+    );
+    summaryEl.innerHTML = renderMD(raw);
+    hljs.highlightAll();
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      summaryEl.innerHTML = `<span style="color:var(--red)">⚠️ ${escHtml(err.message)}</span>`;
+    }
+  }
+
+  isWorking = false;
+  setWorking(false);
+  abortController = null;
+}
+
+// ─────────────────────────────────────────────
+//  CHAT / Q&A
+// ─────────────────────────────────────────────
+function chatKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(e); }
+}
+
+async function sendChat(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const input = document.getElementById('chatInput');
+  const msg   = input.value.trim();
+  if (!msg || isWorking) return;
+
+  input.value = '';
+  input.style.height = '';
+
+  appendChatMsg('user', msg);
+  chatHistory.push({ role: 'user', content: msg });
+
+  isWorking = true;
+  document.getElementById('chatSendBtn').disabled = true;
+
+  // Build context from selected/explained files
+  const ctxParts = [];
+  const ctxFiles = [...selectedPaths].slice(0, 8);
+  for (const path of ctxFiles) {
+    const content = fileCache[path] || '';
+    if (content) ctxParts.push(`--- ${path} ---\n${content.slice(0, 3000)}`);
+  }
+  const ctx = ctxParts.length
+    ? `\n\nHere is source code context from selected files in ${repoOwner}/${repoName}:\n\n${ctxParts.join('\n\n')}`
+    : (repoOwner ? `\n\nThe user is working with the repo ${repoOwner}/${repoName} (no files loaded yet).` : '');
+
+  // Build messages: inject context into first user message of session
+  const messages = chatHistory.map((m, i) => {
+    if (i === chatHistory.length - 1 && m.role === 'user') {
+      return { role: 'user', content: m.content + ctx };
+    }
+    return m;
+  });
+
+  const aiMsgEl = appendChatMsg('ai', null); // placeholder with dots
+  abortController = new AbortController();
+  let raw = '';
+
+  try {
+    await callLLM(
+      messages,
+      chunk => {
+        raw += chunk;
+        aiMsgEl.innerHTML = `<div class="md-body">${renderMD(raw)}</div><span class="cursor"></span>`;
+        document.getElementById('chatMessages').scrollTop = 999999;
+      },
+      abortController.signal
+    );
+    aiMsgEl.innerHTML = `<div class="md-body">${renderMD(raw)}</div>`;
+    hljs.highlightAll();
+    chatHistory.push({ role: 'assistant', content: raw });
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      aiMsgEl.innerHTML = `<span style="color:var(--red)">⚠️ ${escHtml(err.message)}</span>`;
+    }
+  }
+
+  isWorking = false;
+  document.getElementById('chatSendBtn').disabled = false;
+  abortController = null;
+}
+
+function appendChatMsg(role, text) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+
+  const avatar = role === 'ai' ? '🤖' : '👤';
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+
+  if (text === null) {
+    bubble.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+  } else if (role === 'ai') {
+    bubble.innerHTML = `<div class="md-body">${renderMD(text)}</div>`;
+  } else {
+    bubble.textContent = text;
+  }
+
+  div.innerHTML = `<div class="chat-avatar">${avatar}</div>`;
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = 999999;
+  return bubble;
+}
+
+// ─────────────────────────────────────────────
+//  TAB MANAGEMENT
+// ─────────────────────────────────────────────
+const TAB_IDS = { explain:'explainPanel', overview:'overviewPanel', code:'codePanel', chat:'chatPanel' };
+
+function switchTab(tab) {
+  activeTab = tab;
+  Object.keys(TAB_IDS).forEach(t => {
+    document.getElementById(`tab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
+    document.getElementById(TAB_IDS[t]).classList.toggle('panel-hidden', t !== tab);
+  });
+  updateTabActions();
+}
+
+function updateTabActions() {
+  const el = document.getElementById('tabActions');
+  if (activeTab === 'explain') {
+    el.innerHTML = `
+      <button class="btn btn-ghost" style="font-size:0.78rem" onclick="clearExplanations()">Clear</button>
+      ${isWorking ? `<button class="btn btn-danger" style="font-size:0.78rem" onclick="cancelWork()">⏹ Stop</button>` : ''}
+    `;
+  } else if (activeTab === 'chat') {
+    el.innerHTML = `<button class="btn btn-ghost" style="font-size:0.78rem" onclick="clearChat()">Clear chat</button>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+function clearExplanations() {
+  explanations = {};
+  showExplainEmpty();
+  document.getElementById('exportBtn').disabled = true;
+}
+
+function showExplainEmpty() {
+  document.getElementById('explainEmpty').style.display = '';
+  document.getElementById('explainCards').style.display = 'none';
+  renderRecent();
+  updateTabActions();
+}
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="chat-msg ai">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-bubble md-body">Chat cleared. Ask me anything about the codebase!</div>
+    </div>`;
+}
+
+function cancelWork() {
+  if (abortController) abortController.abort();
+  isWorking = false;
+  setWorking(false);
+  setProgress(0, 1, true);
+}
+
+// ─────────────────────────────────────────────
+//  PROGRESS / WORKING STATE
+// ─────────────────────────────────────────────
+function setWorking(on) {
+  document.getElementById('explainBtn').disabled     = on || selectedPaths.size === 0;
+  document.getElementById('overviewBtn').disabled    = on || !allFiles.length;
+  document.getElementById('explainAllBtn').disabled  = on || !allFiles.length;
+  updateTabActions();
+}
+
+function setProgress(done, total, hide = false) {
+  const bar  = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  if (hide) { bar.style.display = 'none'; return; }
+  bar.style.display = '';
+  fill.style.width  = `${(done/total)*100}%`;
+}
+
+// ─────────────────────────────────────────────
+//  EXPORT
+// ─────────────────────────────────────────────
+function exportMarkdown() {
+  const keys = Object.keys(explanations);
+  if (!keys.length) return;
+
+  let md = `# Codebase TLDR: ${repoOwner}/${repoName}\n\n`;
+  md += `> Generated by CodeTLDR on ${new Date().toLocaleDateString()}\n\n`;
+  md += `## Files Explained (${keys.length})\n\n`;
+  keys.forEach(p => {
+    md += `---\n\n## \`${p}\`\n\n${explanations[p]}\n\n`;
+  });
+
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `${repoName}-tldr.md`;
+  a.click();
+  toast(`Exported ${keys.length} explanations`, 'success');
+}
+
+// ─────────────────────────────────────────────
+//  UTILITIES
+// ─────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function humanSize(bytes) {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024*1024) return `${(bytes/1024).toFixed(1)}KB`;
+  return `${(bytes/1024/1024).toFixed(1)}MB`;
+}
+
+function renderMD(text) {
+  try { return marked.parse(text); } catch { return escHtml(text); }
+}
+
+async function copyToClipboard(text, msg = 'Copied!') {
+  if (!text) { toast('Nothing to copy yet', 'info'); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(msg, 'success');
+  } catch {
+    toast('Copy failed — try a different browser', 'error');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  SIDEBAR RESIZE
+// ─────────────────────────────────────────────
+(function() {
+  const handle = document.getElementById('sidebarResize');
+  const sidebar = document.getElementById('sidebar');
+  let dragging = false, startX = 0, startW = 0;
+
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    startX   = e.clientX;
+    startW   = sidebar.offsetWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const w = Math.min(Math.max(startW + e.clientX - startX, 200), 520);
+    sidebar.style.width = w + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+})();
+
+// ─────────────────────────────────────────────
+//  KEYBOARD SHORTCUTS
+// ─────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === ',') { e.preventDefault(); openSettings(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); document.getElementById('repoInput').focus(); }
+  if (e.key === 'Escape') {
+    closeSettings();
+    if (isWorking) cancelWork();
+  }
+});
+
+// Auto-resize chat textarea
+document.getElementById('chatInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// ─────────────────────────────────────────────
+//  THEME
+// ─────────────────────────────────────────────
+function applyTheme(light) {
+  document.documentElement.classList.toggle('light', light);
+  document.getElementById('themeBtn').textContent = light ? '🌙' : '☀️';
+  document.getElementById('hlTheme').href = light
+    ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css'
+    : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css';
+}
+
+function toggleTheme() {
+  const light = !document.documentElement.classList.contains('light');
+  localStorage.setItem('theme', light ? 'light' : 'dark');
+  applyTheme(light);
+}
+
+// Configure marked
+marked.setOptions({ breaks: true, gfm: true });
+
+// Init
+applyTheme(localStorage.getItem('theme') === 'light');
+renderRecent();
+switchTab('explain');
+</script>
+</body>
+</html>

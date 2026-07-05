@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ app_name }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Local Bonsai MLX 1-bit</p>
+          <h1>{{ app_name }}</h1>
+        </div>
+        <button class="theme-toggle" type="button" id="themeToggle" aria-label="Toggle theme">Dark</button>
+      </header>
+
+      <section class="workspace">
+        <form class="control-panel" id="prepareForm" action="/prepare" method="post" enctype="multipart/form-data">
+          <div class="notice-box">
+            <strong>Local first run</strong>
+            <span>{{ first_run_note }}</span>
+          </div>
+
+          <label class="field">
+            <span>Room photo</span>
+            <input id="roomPhotoInput" type="file" name="room_photo" accept="image/png,image/jpeg,image/webp" required>
+          </label>
+          <div class="upload-preview" id="uploadPreview" hidden>
+            <img id="uploadPreviewImage" alt="Selected room preview">
+            <div>
+              <span>Selected photo</span>
+              <strong id="uploadPreviewName"></strong>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Room</span>
+              <select name="room_type">
+                {% for item in room_types %}
+                  <option value="{{ item }}" {% if item == settings.room_type %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Style</span>
+              <select name="style">
+                {% for preset in style_presets %}
+                  <option value="{{ preset }}" {% if preset == selected_style %}selected{% endif %}>{{ preset }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Redesign prompt</span>
+            <textarea
+              id="promptBox"
+              name="prompt"
+              rows="5"
+              placeholder="make it brighter with wood furniture and plants"
+            >{{ prompt }}</textarea>
+          </label>
+
+          <div class="prompt-chips" aria-label="Prompt presets">
+            {% for sample in sample_prompts %}
+              <button type="button" data-prompt="{{ sample }}">{{ sample }}</button>
+            {% endfor %}
+          </div>
+
+          <details class="advanced">
+            <summary>Local settings</summary>
+            <div class="settings-grid">
+              <label class="field">
+                <span>Image size</span>
+                <select name="image_size">
+                  {% for size in [384, 512, 768, 1024] %}
+                    <option value="{{ size }}" {% if size == settings.image_size %}selected{% endif %}>{{ size }} px</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Steps</span>
+                <input type="number" name="steps" min="1" max="40" value="{{ settings.steps }}">
+              </label>
+
+              <label class="field">
+                <span>Guidance</span>
+                <input type="number" name="guidance" min="0" max="10" step="0.1" value="{{ settings.guidance }}">
+              </label>
+
+              <label class="field">
+                <span>Image strength</span>
+                <input type="number" name="image_strength" min="0" max="1" step="0.05" value="{{ settings.image_strength }}">
+              </label>
+
+              <label class="field">
+                <span>Seed</span>
+                <input type="number" name="seed" min="0" max="2147483647" value="{{ settings.seed }}">
+              </label>
+            </div>
+
+            <label class="toggle-row">
+              <input type="checkbox" name="use_prompt_helper" value="1" {% if settings.use_prompt_helper %}checked{% endif %}>
+              <span>Use local Gemma prompt helper</span>
+            </label>
+          </details>
+
+          <button class="generate-button" id="prepareButton" type="submit">Prepare Prompt</button>
+          <p class="status" id="formStatus">{{ message }}</p>
+
+          <div class="progress-panel" id="progressPanel" hidden>
+            <div class="progress-heading">
+              <strong id="progressTitle">Working locally</strong>
+              <span id="progressPercent">0%</span>
+            </div>
+            <progress id="progressBar" max="100" value="0"></progress>
+            <ol id="progressSteps">
+              <li>Prepare prompt</li>
+              <li>Load local model</li>
+              <li>Generate variation 1</li>
+              <li>Generate variation 2</li>
+              <li>Save gallery</li>
+            </ol>
+          </div>
+
+          <div class="model-strip">
+            <div>
+              <span>Image model</span>
+              <strong>{{ model_status.model }}</strong>
+            </div>
+            <div>
+              <span>Backend</span>
+              <strong>{{ model_status.backend }} on {{ model_status.device }}</strong>
+            </div>
+            <div>
+              <span>Prompt helper</span>
+              <strong>{{ model_status.prompt_helper }} · default {{ model_status.prompt_helper_default }}</strong>
+            </div>
+            <div>
+              <span>Model directory</span>
+              <strong>{{ model_status.model_dir }}</strong>
+            </div>
+            <div>
+              <span>Model files</span>
+              <strong>{% if model_files.ready %}Ready locally{% else %}Will download on first run{% endif %}</strong>
+            </div>
+            <div>
+              <span>Outputs</span>
+              <strong>{{ storage_status.generated }}</strong>
+            </div>
+          </div>
+        </form>
+
+        <section class="results" aria-label="Generated room mockup gallery">
+          {% if error %}
+            <div class="error-box">
+              <h2>Local model setup needed</h2>
+              <p>{{ error }}</p>
+            </div>
+          {% endif %}
+
+          {% if gallery %}
+            <div class="prompt-preview">
+              <span>Enhanced prompt sent to the image model</span>
+              <textarea class="prompt-review" readonly>{{ final_prompt }}</textarea>
+              {% if prompt_note %}
+                <small>{{ prompt_note }}</small>
+              {% endif %}
+              {% if prepared_run %}
+                <form class="prepared-actions" id="generatePreparedForm" action="/generate" method="post">
+                  <input type="hidden" name="uploaded_image_name" value="{{ prepared_run.uploaded_image_name }}">
+                  <input type="hidden" name="final_prompt" value="{{ prepared_run.final_prompt }}">
+                  <input type="hidden" name="prompt_note" value="{{ prepared_run.prompt_note }}">
+                  <input type="hidden" name="prompt" value="{{ prepared_run.user_prompt }}">
+                  <input type="hidden" name="style" value="{{ prepared_run.style }}">
+                  <input type="hidden" name="room_type" value="{{ settings.room_type }}">
+                  <input type="hidden" name="image_size" value="{{ settings.image_size }}">
+                  <input type="hidden" name="steps" value="{{ settings.steps }}">
+                  <input type="hidden" name="guidance" value="{{ settings.guidance }}">
+                  <input type="hidden" name="image_strength" value="{{ settings.image_strength }}">
+                  <input type="hidden" name="seed" value="{{ settings.seed }}">
+                  {% if settings.use_prompt_helper %}
+                    <input type="hidden" name="use_prompt_helper" value="1">
+                  {% endif %}
+                  <button class="generate-button" type="submit">Generate 2 Mockups</button>
+                  <p>{{ first_run_note }}</p>
+                </form>
+              {% endif %}
+            </div>
+
+            <div class="gallery">
+              {% for item in gallery %}
+                <article class="image-card">
+                  <button class="image-zoom-button" type="button" data-full="{{ item.url }}" data-label="{{ item.label }}">
+                    <img src="{{ item.url }}" alt="{{ item.label }} room redesign image">
+                  </button>
+                  <div class="image-card-footer">
+                    <h2>{{ item.label }}</h2>
+                    <a href="{{ item.url }}" download>Download</a>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <h2>No active run</h2>
+              <p>{{ message }}</p>
+            </div>
+          {% endif %}
+
+          {% if history %}
+            <section class="history-section" aria-label="Recent redesign runs">
+              <div class="section-heading">
+                <h2>Recent Runs</h2>
+                <span>{{ history|length }} saved</span>
+              </div>
+              <div class="history-grid">
+                {% for run in history[:6] %}
+                  <article class="history-card">
+                    <div class="history-meta">
+                      <strong>{{ run.room_type }} · {{ run.style }}</strong>
+                      <span>{{ run.status }}</span>
+                    </div>
+                    <div class="history-images">
+                      {% for item in run.gallery[:3] %}
+                        <button class="history-zoom-button" type="button" data-full="{{ item.url }}" data-label="{{ item.label }}">
+                          <img src="{{ item.url }}" alt="{{ item.label }} from previous run">
+                        </button>
+                      {% endfor %}
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            </section>
+          {% endif %}
+        </section>
+      </section>
+    </main>
+
+    <dialog class="image-dialog" id="imageDialog">
+      <div class="dialog-bar">
+        <strong id="dialogTitle">Preview</strong>
+        <button type="button" id="dialogClose" aria-label="Close image preview">Close</button>
+      </div>
+      <img id="dialogImage" alt="Expanded room mockup preview">
+    </dialog>
+
+    <script>
+      const root = document.documentElement;
+      const savedTheme = localStorage.getItem("roomRedesignTheme") || "light";
+      const themeToggle = document.getElementById("themeToggle");
+      const prepareForm = document.getElementById("prepareForm");
+      const generatePreparedForm = document.getElementById("generatePreparedForm");
+      const prepareButton = document.getElementById("prepareButton");
+      const status = document.getElementById("formStatus");
+      const promptBox = document.getElementById("promptBox");
+      const photoInput = document.getElementById("roomPhotoInput");
+      const uploadPreview = document.getElementById("uploadPreview");
+      const uploadPreviewImage = document.getElementById("uploadPreviewImage");
+      const uploadPreviewName = document.getElementById("uploadPreviewName");
+      const progressPanel = document.getElementById("progressPanel");
+      const progressTitle = document.getElementById("progressTitle");
+      const progressPercent = document.getElementById("progressPercent");
+      const progressBar = document.getElementById("progressBar");
+      const progressSteps = Array.from(document.querySelectorAll("#progressSteps li"));
+      const imageDialog = document.getElementById("imageDialog");
+      const dialogImage = document.getElementById("dialogImage");
+      const dialogTitle = document.getElementById("dialogTitle");
+      const dialogClose = document.getElementById("dialogClose");
+
+      function setTheme(theme) {
+        root.dataset.theme = theme;
+        localStorage.setItem("roomRedesignTheme", theme);
+        themeToggle.textContent = theme === "dark" ? "Light" : "Dark";
+      }
+
+      setTheme(savedTheme);
+
+      themeToggle.addEventListener("click", () => {
+        setTheme(root.dataset.theme === "dark" ? "light" : "dark");
+      });
+
+      document.querySelectorAll("[data-prompt]").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          promptBox.value = chip.dataset.prompt;
+          promptBox.focus();
+        });
+      });
+
+      photoInput.addEventListener("change", () => {
+        const file = photoInput.files && photoInput.files[0];
+        if (!file) {
+          uploadPreview.hidden = true;
+          uploadPreviewImage.removeAttribute("src");
+          uploadPreviewName.textContent = "";
+          return;
+        }
+        uploadPreviewImage.src = URL.createObjectURL(file);
+        uploadPreviewName.textContent = file.name;
+        uploadPreview.hidden = false;
+      });
+
+      function showProgress(mode) {
+        const isGenerate = mode === "generate";
+        const labels = isGenerate
+          ? ["Review accepted", "Load local model", "Generate variation 1", "Generate variation 2", "Save gallery"]
+          : ["Upload photo", "Apply style preset", "Optional Gemma helper", "Build final prompt", "Ready to review"];
+        let value = 8;
+        progressPanel.hidden = false;
+        progressTitle.textContent = isGenerate ? "Generating locally" : "Preparing enhanced prompt";
+        progressBar.value = value;
+        progressPercent.textContent = `${value}%`;
+        progressSteps.forEach((step, index) => {
+          step.textContent = labels[index];
+          step.classList.toggle("active", index === 0);
+        });
+        window.setInterval(() => {
+          value = Math.min(value + (isGenerate ? 3 : 9), isGenerate ? 92 : 96);
+          progressBar.value = value;
+          progressPercent.textContent = `${value}%`;
+          const activeIndex = Math.min(progressSteps.length - 1, Math.floor(value / 22));
+          progressSteps.forEach((step, index) => step.classList.toggle("active", index <= activeIndex));
+        }, isGenerate ? 1200 : 420);
+      }
+
+      prepareForm.addEventListener("submit", () => {
+        prepareButton.disabled = true;
+        prepareButton.textContent = "Preparing...";
+        status.textContent = "Uploading the room photo and preparing the enhanced prompt.";
+        showProgress("prepare");
+      });
+
+      if (generatePreparedForm) {
+        generatePreparedForm.addEventListener("submit", () => {
+          const button = generatePreparedForm.querySelector("button");
+          button.disabled = true;
+          button.textContent = "Generating...";
+          status.textContent = "Running local Bonsai image generation. First run can take some time.";
+          showProgress("generate");
+        });
+      }
+
+      document.querySelectorAll("[data-full]").forEach((trigger) => {
+        trigger.addEventListener("click", () => {
+          dialogImage.src = trigger.dataset.full;
+          dialogTitle.textContent = trigger.dataset.label || "Preview";
+          imageDialog.showModal();
+        });
+      });
+
+      dialogClose.addEventListener("click", () => imageDialog.close());
+      imageDialog.addEventListener("click", (event) => {
+        if (event.target === imageDialog) imageDialog.close();
+      });
+    </script>
+  </body>
+</html>

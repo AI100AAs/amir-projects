@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Study Buddy</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <img src="icons/icon48.png" alt="Study Buddy" />
+      <h1>AI Study Buddy</h1>
+      <button id="themeToggle" class="icon-btn" title="Toggle light/dark">☀</button>
+      <button id="openSidePanel" class="icon-btn" title="Open side panel">⧠</button>
+    </header>
+
+    <section id="setup" class="hidden">
+      <label>
+        What are you studying?
+        <input type="text" id="goal" placeholder="e.g. finish chapter 3 of calculus" />
+      </label>
+
+      <div class="presets">
+        <button class="preset" data-duration="25" data-checkin="5">🍅 25 min</button>
+        <button class="preset" data-duration="45" data-checkin="5">🎯 45 min</button>
+        <button class="preset" data-duration="90" data-checkin="10">🚀 90 min</button>
+      </div>
+
+      <div class="row">
+        <label>
+          Duration
+          <input type="number" id="duration" value="45" min="5" max="240" />
+        </label>
+        <label>
+          Check-in
+          <input type="number" id="checkIn" value="5" min="1" max="60" />
+        </label>
+      </div>
+
+      <button id="start" class="primary">Start focusing</button>
+      <p class="hint">All tab data stays on your device. LM Studio must be running locally.</p>
+    </section>
+
+    <section id="session" class="hidden">
+      <div class="status-pill" id="stateBadge">idle</div>
+      <h2 id="goalDisplay"></h2>
+      <div class="timer"><span id="timeRemaining">--:--</span></div>
+      <div class="stats" id="stats"></div>
+      <p id="lastMessage" class="message">Let’s get to work.</p>
+      <div class="actions">
+        <button id="break" class="secondary">Take a break</button>
+        <button id="stop" class="danger">End session</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

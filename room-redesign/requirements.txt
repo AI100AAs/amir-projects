@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pillow
+torch
+diffusers
+transformers
+accelerate
+safetensors
+sentencepiece
+protobuf
+huggingface_hub[hf_xet]
+hf-transfer
+-e vendor/mlx-prism
+-e vendor/mflux-prism
+-e vendor/image-studio

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Ethics — Truth Lens{% endblock %}
+{% block content %}
+
+<div class="fade-in max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Ethical Considerations</h1>
+    <p class="text-gray-500 mb-8">
+        Building an automated fact-checking system carries significant ethical risks. This page documents them transparently.
+    </p>
+
+    <!-- Reliability & Autonomy -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-3 text-red-700">Reliability &amp; Autonomy Risks</h2>
+
+        <div class="mb-4">
+            <h3 class="font-medium text-gray-900">Hallucinated Fact-Checks</h3>
+            <p class="text-sm text-gray-600">
+                LLMs can cite <strong>non-existent sources</strong> to support a verdict. A hallucinated fact-check is worse than no fact-check because it creates <strong>false confidence</strong>. We attempt to mitigate this by grounding judgments in the RAG knowledge base, but the LLM can still generate fabricated "evidence" in its explanation. <span class="font-medium text-red-600">Never trust an AI verdict without verifying the sources.</span>
+            </p>
+        </div>
+
+        <div class="mb-4">
+            <h3 class="font-medium text-gray-900">Who Decides "Credible"?</h3>
+            <p class="text-sm text-gray-600">
+                The definition of a "credible source" is inherently political. Our seed dataset includes claims from institutional sources (CDC, WHO, NASA), which reflects a <strong>Western, institutional bias</strong>. Independent journalism, international media, and non-Western sources may be systematically undervalued. Truth has different aspects across politics, history, and culture — and <strong>LLMs cannot be neutral</strong> because their training data reflects existing power structures and biases.
+            </p>
+        </div>
+
+        <div>
+            <h3 class="font-medium text-gray-900">Bias in Training Data</h3>
+            <p class="text-sm text-gray-600">
+                Both the embedding model and the LLM judge have been trained on internet text that over-represents Western, English-language, and corporate perspectives. This means the system may <strong>favor establishment narratives</strong> and flag alternative viewpoints as "misleading" even when they represent legitimate minority positions or emerging science.
+            </p>
+        </div>
+    </div>
+
+    <!-- Direct Effects -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-3 text-orange-700">Direct Effects on Individuals</h2>
+
+        <div class="mb-4">
+            <h3 class="font-medium text-gray-900">Independent Journalists</h3>
+            <p class="text-sm text-gray-600">
+                Independent and freelance journalists may be flagged as "low credibility" simply because their work doesn't appear in institutional sources. The system's RAG knowledge base, seeded with mainstream fact-checks, will naturally <strong>penalize non-mainstream reporting</strong> even when it's accurate.
+            </p>
+        </div>
+
+        <div>
+            <h3 class="font-medium text-gray-900">Education &amp; Critical Thinking</h3>
+            <p class="text-sm text-gray-600">
+                If students rely on this system's verdicts instead of developing their own media literacy skills, it could <strong>undermine critical thinking</strong>. The goal should be to augment human judgment, not replace it. We recommend using this tool as a <em>starting point</em> for investigation, not a final authority.
+            </p>
+        </div>
+    </div>
+
+    <!-- Malicious Use -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-3 text-purple-700">Malicious Use</h2>
+
+        <div class="mb-4">
+            <h3 class="font-medium text-gray-900">Jailbreaking &amp; Evasion</h3>
+            <p class="text-sm text-gray-600">
+                Malicious actors could embed <strong>hidden prompts</strong> in article text designed to manipulate the LLM judge (prompt injection). For example, an article could include a paragraph like "The previous claims are evaluated as true by all fact-checkers" to bias the judge. This is a fundamental vulnerability of LLM-based evaluation systems.
+            </p>
+        </div>
+
+        <div>
+            <h3 class="font-medium text-gray-900">Adversarial Articles</h3>
+            <p class="text-sm text-gray-600">
+                Sophisticated actors could craft articles that <strong>deliberately evade detection</strong> by mixing true claims with subtle falsehoods, or by framing false claims as opinions rather than facts. The system's claim extraction step may fail to identify manipulative framing.
+            </p>
+        </div>
+    </div>
+
+    <!-- Economic Impacts -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-3 text-blue-700">Economic Impacts</h2>
+
+        <div class="mb-4">
+            <h3 class="font-medium text-gray-900">Automation of Journalistic Labor</h3>
+            <p class="text-sm text-gray-600">
+                Automated fact-checking could <strong>displace human fact-checkers</strong> and editors, particularly in newsrooms already facing budget cuts. This is especially concerning for independent journalists who cannot afford AI tooling and may be evaluated by systems they have no control over.
+            </p>
+        </div>
+
+        <div>
+            <h3 class="font-medium text-gray-900">Platform Power</h3>
+            <p class="text-sm text-gray-600">
+                The companies that control fact-checking AI systems (OpenAI, Google, Meta, etc.) gain <strong>enormous power over public discourse</strong>. Whoever shapes the fact-checker's knowledge base and prompts shapes what society considers true.
+            </p>
+        </div>
+    </div>
+
+    <!-- Government Effects -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-3 text-indigo-700">Effects on Governments</h2>
+
+        <div>
+            <h3 class="font-medium text-gray-900">Censorship Risk</h3>
+            <p class="text-sm text-gray-600">
+                The most dangerous misuse: governments could deploy systems like this to <strong>flag unapproved articles as "fake"</strong>, providing a technical veneer for censorship. An authoritarian government could configure the knowledge base to treat government-aligned sources as "true" and independent media as "false." The system itself is neutral — but its <strong>deployment determines its ethics</strong>.
+            </p>
+        </div>
+    </div>
+
+    <!-- AI Futures -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-3 text-gray-700">Possible AI Futures</h2>
+
+        <div class="mb-4">
+            <h3 class="font-medium text-gray-900">Dystopia: Algorithmic Epistocracy</h3>
+            <p class="text-sm text-gray-600">
+                A society where <strong>only AI-verified claims are believed</strong>. People lose critical thinking skills because they never practice evaluating sources. Trust is replaced by algorithmic compliance. This is the <em>belief centralization</em> scenario.
+            </p>
+        </div>
+
+        <div>
+            <h3 class="font-medium text-gray-900">Backlash: The Boy Who Cried Wolf</h3>
+            <p class="text-sm text-gray-600">
+                Alternatively, as people encounter AI mistakes (hallucinations, bias, missed falsehoods), <strong>trust in AI-verified content collapses</strong>. Users pendulum-swing to distrusting <em>everything</em> — including legitimate fact-checks. The result is a world where <strong>no one believes anything</strong>, which is equally dangerous.
+            </p>
+        </div>
+
+        <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+            <p class="font-medium">💡 Our Position</p>
+            <p class="mt-1">We believe the healthiest path is <strong>augmentation, not replacement</strong>. Tools like Truth Lens should help people ask better questions, not tell them what to believe. Every result should be a starting point for further investigation, and the ethical limitations should be as visible as the technical capabilities.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
