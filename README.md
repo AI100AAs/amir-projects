@@ -1,5 +1,16 @@
 Sample projects for **AI 100** at UBC, by **Amir**.
 
+## For AI agents
+
+If you are an LLM agent pulling this repo to run or modify a project, read **[AGENTS.md](AGENTS.md)** first. It has:
+
+- Exact `cd` paths (including folders with spaces)
+- Run commands, ports, and LM Studio setup
+- Port collision warnings and common failure fixes
+- A step-by-step workflow template
+
+Each project may also have its own `README.md` with project-specific detail.
+
 ## Projects
 
 | Folder | Description |
@@ -17,7 +28,7 @@ Sample projects for **AI 100** at UBC, by **Amir**.
 | `fridge good` | Polished FridgeAI kitchen assistant with photo scan, expiry tracking, recipes, and meal planner. |
 | `fridgeai-prototype` | Standalone single-file FridgeAI meal-planner UI prototype (no build step). |
 | `monopoly` | Fortune Avenue — polished 40-space Monopoly-style board game for 2–4 local players. |
-| `monopoly-gemma4` | Monopoly experiments plus a World Cup 2026 predictor with a Monte Carlo match engine. |
+| `monopoly-gemma4` | Monopoly experiments (browser + Python CLI). |
 | `monopoly-gpt5.5` | Metro Mogul — self-contained browser Monopoly-style property-trading game. |
 | `monopoly-qwen3.6` | Monopoly implementations in Python (CLI and GUI) and a modern HTML board-game UI. |
 | `music` | Records instrument/voice performances, analyzes audio locally, and generates practice feedback. |
@@ -30,6 +41,26 @@ Sample projects for **AI 100** at UBC, by **Amir**.
 | `tictactoe new rules` | Alternate copy of Override tic-tac-toe with the same override-token rules. |
 | `ubc-nav` | Campus navigation that routes by mood and preferences (shade, quiet, scenic) over a walking graph. |
 | `wearable-health` | Mobile-style prototype simulating wearable sensors with charts and an AI health assistant. |
+| `worldcup2026` | FIFA World Cup 2026 match predictor with a Monte Carlo simulation engine. |
+
+## Quick start (humans)
+
+Most web apps follow one of these patterns:
+
+```bash
+# Node / Vite
+cd <project> && npm install && npm run dev
+
+# Python
+cd <project> && python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt && python server.py   # or: python run.py
+
+# Static HTML
+cd <project> && python3 -m http.server 8000
+# then open http://localhost:8000
+```
+
+For AI features, start **LM Studio** with the local server on port `1234` and load a model (usually `google/gemma-4-e4b`). See [AGENTS.md](AGENTS.md) for per-project requirements and ports.
 
 ## Local models
 
