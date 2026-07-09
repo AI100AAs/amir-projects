@@ -123,7 +123,7 @@ export default function Home() {
                     transition={{ delay: 0.1 }}
                     className="text-muted-foreground text-lg"
                   >
-                    Describe your problem or click on a component to start a repair guide
+                    Describe the problem, upload a photo, or click a component to start a guide
                   </motion.p>
                 </div>
 
