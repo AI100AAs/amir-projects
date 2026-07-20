@@ -19,7 +19,7 @@ from database import (
 )
 from vision import detect_ingredients
 from recipes import generate_recipes
-from llm import get_config, set_provider, check_health, PROVIDERS
+from llm import get_config, check_health, PROVIDERS
 
 app = FastAPI(title="FridgeChef API", version="2.0")
 
@@ -492,13 +492,10 @@ def get_stats(db: Session = Depends(get_db)):
 
 # ── Provider config ───────────────────────────────────────────────────────────
 
-class ProviderBody(BaseModel):
-    provider: str
-
 @app.get("/api/provider")
 def get_provider():
     cfg = get_config()
-    current = cfg.get("provider", "openrouter")
+    current = cfg.get("provider")
     return {
         "current": current,
         "providers": {
@@ -512,11 +509,6 @@ def get_provider():
             for name, info in PROVIDERS.items()
         },
     }
-
-@app.post("/api/provider")
-def switch_provider(body: ProviderBody):
-    set_provider(body.provider)
-    return {"ok": True, "provider": body.provider}
 
 
 # ── Scan History ──────────────────────────────────────────────────────────────

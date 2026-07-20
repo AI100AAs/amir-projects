@@ -1,14 +1,8 @@
 """
-Manages two LLM providers with automatic fallback:
-  - openrouter: z-ai/glm-4.5-air:free  (supports vision)
-  - lmstudio:   gemma-4-12b-it locally  (text only — no vision)
-
-For vision requests (image scan), only vision-capable providers are tried.
-For text requests (recipe gen), the user's selected provider is tried first.
+Talks to the UBC AI staging endpoint (qwen3.6-35b-a3b) for both text and vision requests.
 """
 
 import os
-import json
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
@@ -20,51 +14,32 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 log = logging.getLogger(__name__)
 
 PROVIDERS = {
-    "openrouter": {
-        "base_url": "https://openrouter.ai/api/v1",
-        "model": "openrouter/free",
-        "vision_models": ["openrouter/free"],
-        "label": "OpenRouter (Free)",
-        "supports_vision": True,
-    },
-    "lmstudio": {
-        "base_url": "http://127.0.0.1:1234/v1",
-        "model": "google/gemma-4-e4b",
-        "vision_models": ["google/gemma-4-e4b"],
-        "label": "LMStudio (Gemma 4 E4B)",
+    "ubc": {
+        "base_url": "https://ai-stg.apps.ctlt.ubc.ca/v1",
+        "model": "qwen3.6-35b-a3b",
+        "vision_models": ["qwen3.6-35b-a3b"],
+        "label": "UBC AI (Qwen3.6 35B)",
         "supports_vision": True,
     },
 }
 
-CONFIG_FILE = Path(__file__).parent.parent / "provider_config.json"
-_FALLBACK_ORDER = ["openrouter", "lmstudio"]
+PROVIDER = "ubc"
 
 
 def get_config() -> dict:
-    if CONFIG_FILE.exists():
-        try:
-            return json.loads(CONFIG_FILE.read_text())
-        except Exception:
-            pass
-    return {"provider": "openrouter"}
+    return {"provider": PROVIDER}
 
 
-def set_provider(provider: str):
-    if provider not in PROVIDERS:
-        raise ValueError(f"Unknown provider: {provider}")
-    CONFIG_FILE.write_text(json.dumps({"provider": provider}))
-
-
-def _make_client(provider: str, model_override: str = None) -> tuple[OpenAI, str]:
-    cfg = PROVIDERS[provider]
-    api_key = os.getenv("OPENROUTER_API_KEY", "no-key") if provider == "openrouter" else "lm-studio"
+def _make_client(model_override: str = None) -> tuple[OpenAI, str]:
+    cfg = PROVIDERS[PROVIDER]
+    api_key = os.getenv("UBC_AI_API_KEY", "no-key")
     model = model_override or cfg["model"]
     return OpenAI(base_url=cfg["base_url"], api_key=api_key), model
 
 
-def check_health(provider: str) -> bool:
+def check_health(provider: str = PROVIDER) -> bool:
     try:
-        client, _ = _make_client(provider)
+        client, _ = _make_client()
         client.models.list()
         return True
     except Exception:
@@ -76,62 +51,61 @@ def chat(messages: list, max_tokens: int = 4096, images: list = None) -> tuple[s
     Send a chat request. Returns (response_text, provider_used).
 
     - images: list of (base64_str, media_type) — marks this as a vision request.
-      Vision requests skip providers that don't support images.
-    - Falls back to the other provider on connection/auth errors.
     """
-    preferred = get_config().get("provider", "openrouter")
-    order = [preferred] + [p for p in _FALLBACK_ORDER if p != preferred]
-
+    cfg = PROVIDERS[PROVIDER]
     vision_request = bool(images)
     last_err = None
 
-    for provider in order:
-        cfg = PROVIDERS[provider]
-        if vision_request and not cfg["supports_vision"]:
-            log.info("Skipping '%s' for vision (no vision support)", provider)
-            continue
+    models_to_try = cfg["vision_models"] if vision_request else [cfg["model"]]
 
-        models_to_try = cfg["vision_models"] if vision_request else [cfg["model"]]
+    for model_id in models_to_try:
+        try:
+            client, model = _make_client(model_override=model_id)
 
-        for model_id in models_to_try:
-            try:
-                client, model = _make_client(provider, model_override=model_id)
+            if vision_request:
+                content = []
+                for b64, media_type in images:
+                    content.append({
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{media_type};base64,{b64}"},
+                    })
+                for m in messages:
+                    if m["role"] == "user":
+                        content.append({"type": "text", "text": m["content"]})
+                payload = [{"role": "user", "content": content}]
+            else:
+                payload = messages
 
-                if vision_request:
-                    content = []
-                    for b64, media_type in images:
-                        content.append({
-                            "type": "image_url",
-                            "image_url": {"url": f"data:{media_type};base64,{b64}"},
-                        })
-                    for m in messages:
-                        if m["role"] == "user":
-                            content.append({"type": "text", "text": m["content"]})
-                    payload = [{"role": "user", "content": content}]
-                else:
-                    payload = messages
+            response = client.chat.completions.create(
+                model=model,
+                max_tokens=max_tokens,
+                messages=payload,
+                extra_body={"reasoning_effort": "none"},
+            )
+            message = response.choices[0].message
+            reasoning = getattr(message, "reasoning_content", None)
+            if reasoning:
+                log.debug("Reasoning (%s): %s", PROVIDER, reasoning)
 
-                response = client.chat.completions.create(
-                    model=model, max_tokens=max_tokens, messages=payload
+            if not message.content:
+                raise RuntimeError(
+                    "Model returned no content — max_tokens was likely exhausted by "
+                    "reasoning before an answer was produced. Try raising max_tokens."
                 )
-                text = response.choices[0].message.content.strip()
-                if provider != preferred:
-                    log.warning("Fell back from '%s' to '%s'", preferred, provider)
-                return text, provider
 
-            except APIConnectionError as e:
-                log.warning("Provider '%s' unreachable: %s", provider, e)
-                last_err = e
-            except APIStatusError as e:
-                log.warning("Provider '%s' [%s] returned %s — trying next", provider, model_id, e.status_code)
-                last_err = e
-            except Exception as e:
-                log.warning("Provider '%s' [%s] failed: %s", provider, model_id, e)
-                last_err = e
+            return message.content.strip(), PROVIDER
 
-    if vision_request and not any(PROVIDERS[p]["supports_vision"] for p in order):
-        raise RuntimeError("No vision-capable provider available. Enable OpenRouter to scan images.")
-    raise RuntimeError(f"All providers failed. Last error: {last_err}")
+        except APIConnectionError as e:
+            log.warning("Provider '%s' unreachable: %s", PROVIDER, e)
+            last_err = e
+        except APIStatusError as e:
+            log.warning("Provider '%s' [%s] returned %s", PROVIDER, model_id, e.status_code)
+            last_err = e
+        except Exception as e:
+            log.warning("Provider '%s' [%s] failed: %s", PROVIDER, model_id, e)
+            last_err = e
+
+    raise RuntimeError(f"UBC AI provider failed. Last error: {last_err}")
 
 
 def clean_json(text: str) -> str:

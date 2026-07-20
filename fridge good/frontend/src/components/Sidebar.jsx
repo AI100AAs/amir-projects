@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import api from "../api";
-import { toast } from "react-hot-toast";
 
 const NAV = [
   { id: "dashboard",   icon: "▦",  label: "Dashboard" },
@@ -12,11 +11,10 @@ const NAV = [
   { id: "settings",    icon: "⚙️", label: "Settings" },
 ];
 
-const PROVIDER_ICONS = { openrouter: "☁️", lmstudio: "💻" };
+const PROVIDER_ICONS = { ubc: "🎓" };
 
 export default function Sidebar({ current, onNavigate, open, onToggle, urgentAlerts, stats, dark, toggleDark }) {
   const [providerInfo, setProviderInfo] = useState(null);
-  const [switching, setSwitching] = useState(false);
 
   const loadProvider = async () => {
     try {
@@ -30,17 +28,6 @@ export default function Sidebar({ current, onNavigate, open, onToggle, urgentAle
     const id = setInterval(loadProvider, 15000);
     return () => clearInterval(id);
   }, []);
-
-  const switchProvider = async (name) => {
-    if (switching || providerInfo?.current === name) return;
-    setSwitching(true);
-    try {
-      await api.post("/api/provider", { provider: name });
-      await loadProvider();
-      toast.success(`Switched to ${providerInfo.providers[name]?.label}`);
-    } catch { /* handled by interceptor */ }
-    finally { setSwitching(false); }
-  };
 
   return (
     <aside className={`fixed top-0 left-0 h-full bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 z-20 ${open ? "w-56" : "w-16"}`}>
@@ -96,18 +83,13 @@ export default function Sidebar({ current, onNavigate, open, onToggle, urgentAle
           )}
           <div className="flex flex-col gap-1">
             {Object.entries(providerInfo.providers).map(([name, info]) => {
-              const isActive = providerInfo.current === name;
               const isHealthy = info.healthy;
               return (
-                <button
+                <div
                   key={name}
-                  onClick={() => switchProvider(name)}
-                  disabled={switching}
                   title={`${info.label} — ${isHealthy ? "online" : "offline"}`}
-                  className={`flex items-center gap-2 rounded-lg transition text-left w-full relative
-                    ${open ? "px-2 py-1.5" : "justify-center px-1 py-1.5"}
-                    ${isActive ? "bg-green-900/50 text-green-300" : "hover:bg-slate-800 text-slate-500 hover:text-slate-300"}
-                    ${!isHealthy ? "opacity-40" : ""}`}
+                  className={`flex items-center gap-2 rounded-lg text-left w-full relative bg-green-900/50 text-green-300
+                    ${open ? "px-2 py-1.5" : "justify-center px-1 py-1.5"}`}
                 >
                   <span className="text-sm flex-shrink-0">{PROVIDER_ICONS[name]}</span>
                   {open && (
@@ -117,8 +99,8 @@ export default function Sidebar({ current, onNavigate, open, onToggle, urgentAle
                     </div>
                   )}
                   {open && <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isHealthy ? "bg-green-400" : "bg-slate-600"}`} />}
-                  {!open && isActive && <span className="absolute right-0.5 top-0.5 w-1.5 h-1.5 rounded-full bg-green-400" />}
-                </button>
+                  {!open && <span className="absolute right-0.5 top-0.5 w-1.5 h-1.5 rounded-full bg-green-400" />}
+                </div>
               );
             })}
           </div>
